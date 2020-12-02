@@ -69,6 +69,7 @@ class SceneObject:
 				params[PARAM_RADIUS] = Param.new(1.0)
 			SHAPE_BOX:
 				params[PARAM_SIZE] = Param.new(Vector3(1,1,1))
+				params[PARAM_ROUNDING] = Param.new(0.0)
 			SHAPE_TORUS:
 				params[PARAM_RADIUS] = Param.new(1.0)
 				params[PARAM_THICKNESS] = Param.new(0.25)
@@ -232,7 +233,9 @@ static func _get_shape_code(obj: SceneObject, pos_code: String) -> String:
 				"get_sphere(", pos_code, ", vec3(0.0), ", _get_param_code(obj, PARAM_RADIUS), ")")
 
 		SHAPE_BOX:
-			return str("get_box(", pos_code, ", ", _get_param_code(obj, PARAM_SIZE), ")")
+			return str("get_rounded_box(", pos_code, 
+				", ", _get_param_code(obj, PARAM_SIZE), 
+				", ", _get_param_code(obj, PARAM_ROUNDING), ")")
 
 		SHAPE_TORUS:
 			return str("get_torus(", pos_code, 

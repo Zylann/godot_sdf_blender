@@ -22,6 +22,11 @@ float get_box(vec3 p, vec3 b) {
 	return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
+float get_rounded_box(vec3 p, vec3 b, float r) {
+	vec3 q = abs(p) - b;
+	return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
+}
+
 float get_torus(vec3 p, vec2 r) {
 	vec2 q = vec2(length(p.xz) - r.x, p.y);
 	return length(q) - r.y;
