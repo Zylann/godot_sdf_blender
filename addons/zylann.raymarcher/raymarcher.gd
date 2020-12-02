@@ -13,6 +13,7 @@ const SHAPE_CYLINDER = 3
 
 const OP_UNION = 0
 const OP_SUBTRACT = 1
+const OP_COLOR = 2
 
 const PARAM_TRANSFORM = 0
 const PARAM_COLOR = 1
@@ -305,7 +306,11 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 				scene += str(indent, "s = smooth_subtract_c(s.w, ", shape_code, ", s.rgb, ",
 					_get_param_code(obj, PARAM_COLOR), ".rgb, ", 
 					_get_param_code(obj, PARAM_SMOOTHNESS), ");\n")
-				pass
+
+			OP_COLOR:
+				scene += str(indent, "s.rgb = smooth_color(s.w, ", shape_code, ", s.rgb, ",
+					_get_param_code(obj, PARAM_COLOR), ".rgb, ", 
+					_get_param_code(obj, PARAM_SMOOTHNESS), ");\n")
 			_:
 				assert(false)
 

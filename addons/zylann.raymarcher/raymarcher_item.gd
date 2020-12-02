@@ -5,7 +5,7 @@ extends Spatial
 const Raymarcher = preload("./raymarcher.gd")
 
 
-export(int, "Add", "Subtract") var operation setget set_operation, get_operation
+export(int, "Add", "Subtract", "Color") var operation setget set_operation, get_operation
 export(Color) var color = Color(1,1,1) setget set_color, get_color
 export(float) var smoothness = 0.2 setget set_smoothness, get_smoothness
 

@@ -54,6 +54,12 @@ vec4 smooth_union_c(float da, float db, vec3 ca, vec3 cb, float k) {
 	return vec4(col, d);
 }
 
+vec3 smooth_color(float da, float db, vec3 ca, vec3 cb, float k) {
+	float h = clamp(0.5 + 0.5 * (db - da) / k, 0.0, 1.0);
+	vec3 col = mix(cb, ca, h);
+	return col;
+}
+
 vec4 smooth_subtract_c(float db, float da, vec3 ca, vec3 cb, float k) {
 	float h = clamp(0.5 - 0.5 * (db + da) / k, 0.0, 1.0);
     float d = mix(db, -da, h) + k * h * (1.0 - h);
