@@ -59,17 +59,33 @@ func _get_param(param_index: int):
 	return _data.params[param_index].value
 
 
+# Used internally.
+func get_raymarcher_data() -> Raymarcher.SceneObject:
+	return _data
+
+
+func _get_raymarcher() -> Raymarcher:
+	var parent = get_parent()
+	while parent != null and not (parent is Raymarcher):
+		parent = parent.get_parent()
+	return parent
+
+
+func _set_raymarcher(rm: Raymarcher):
+	if _raymarcher != null:
+		_raymarcher.schedule_structural_update()
+	_raymarcher = rm
+	if _raymarcher != null:
+		_raymarcher.schedule_structural_update()
+
+
 func _notification(what: int):
 	match what:
 		NOTIFICATION_PARENTED:
-			if get_parent() is Raymarcher:
-				_raymarcher = get_parent() as Raymarcher
-				_raymarcher.add_object(_data, get_index())
+			_set_raymarcher(_get_raymarcher())
 		
 		NOTIFICATION_UNPARENTED:
-			if _raymarcher != null:
-				_raymarcher.remove_object(_data)
-			_raymarcher = null
+			_set_raymarcher(_get_raymarcher())
 		
 		NOTIFICATION_TRANSFORM_CHANGED:
 			_set_param(Raymarcher.PARAM_TRANSFORM, global_transform.affine_inverse())

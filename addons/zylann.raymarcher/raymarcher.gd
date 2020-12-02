@@ -2,6 +2,8 @@ tool
 #class_name Raymarcher
 extends MeshInstance
 
+var RaymarcherItem = load("res://addons/zylann.raymarcher/raymarcher_item.gd")
+
 const SHADER_PATH = "res://addons/zylann.raymarcher/raymarch.shader"
 
 const SHAPE_SPHERE = 0
@@ -90,6 +92,7 @@ var _next_id := 0
 var _shader_template : ShaderTemplate
 var _shader_material : ShaderMaterial
 var _need_shader_update := true
+var _need_objects_update := true
 
 
 func _ready():
@@ -98,6 +101,8 @@ func _ready():
 	var pm := QuadMesh.new()
 	pm.size = Vector2(2, 2)
 	mesh = pm
+	
+	set_process(true)
 
 
 static func get_param_type(param_index) -> int:
@@ -106,17 +111,6 @@ static func get_param_type(param_index) -> int:
 
 static func get_param_name(param_index) -> int:
 	return _param_names[param_index]
-
-
-func add_object(so: SceneObject, index: int):
-	assert(not (so in _objects))
-	_objects.insert(index, so)
-	_need_shader_update = true
-
-
-func remove_object(so: SceneObject):
-	_objects.erase(so)
-	_need_shader_update = true
 
 
 func set_object_param(so: SceneObject, param_index: int, value):
@@ -130,13 +124,29 @@ func set_object_param(so: SceneObject, param_index: int, value):
 func set_object_operation(so: SceneObject, op: int):
 	if so.operation != op:
 		so.operation = op
-		_need_shader_update = true
+		_schedule_shader_update()
+
+
+func schedule_structural_update():
+	_need_objects_update = true
+	set_process(true)
+
+
+func _schedule_shader_update():
+	_need_shader_update = true
+	set_process(true)
 
 
 func _process(delta):
-	if _need_shader_update:
+	if _need_objects_update:
+		_need_objects_update = false
+		_update_objects_from_children()
+		
+	elif _need_shader_update:
 		_need_shader_update = false
 		_update_shader()
+	
+	set_process(false)
 
 
 func _update_shader():
@@ -167,6 +177,15 @@ func _update_material():
 			var param = obj.params[param_index]
 			if param.uniform != "":
 				_shader_material.set_shader_param(param.uniform, param.value)
+
+
+func _update_objects_from_children():
+	_objects.clear()
+	for child_index in get_child_count():
+		var child = get_child(child_index)
+		if child is RaymarcherItem:
+			_objects.append(child.get_raymarcher_data())
+	_update_shader()
 
 
 static func _load_shader_template(fpath: String) -> ShaderTemplate:
