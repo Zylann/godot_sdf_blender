@@ -143,7 +143,7 @@ void fragment() {
 	vec3 ray_origin = world_coords.xyz;
 	vec3 ray_dir = normalize(world_coords.xyz - world_cam_pos);
 	
-	float time = TIME;
+	float time = 0.0;
 	
 	vec3 normal;
 	vec4 rm = raymarch(ray_origin, ray_dir, normal, time);
