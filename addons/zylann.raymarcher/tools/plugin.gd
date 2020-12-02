@@ -5,6 +5,7 @@ const Raymarcher = preload("../raymarcher.gd")
 const RaymarcherBox = preload("../raymarcher_box.gd")
 const RaymarcherSphere = preload("../raymarcher_sphere.gd")
 const RaymarcherTorus = preload("../raymarcher_torus.gd")
+const RaymarcherCylinder = preload("../raymarcher_cylinder.gd")
 
 
 func _get_icon(icon_name: String):
@@ -16,6 +17,7 @@ func _enter_tree():
 	add_custom_type("RaymarcherBox", "Spatial", RaymarcherBox, _get_icon("sdf_box"))
 	add_custom_type("RaymarcherSphere", "Spatial", RaymarcherSphere, _get_icon("sdf_sphere"))
 	add_custom_type("RaymarcherTorus", "Spatial", RaymarcherTorus, _get_icon("sdf_torus"))
+	add_custom_type("RaymarcherCylinder", "Spatial", RaymarcherCylinder, _get_icon("sdf_cylinder"))
 
 
 func _exit_tree():
@@ -23,4 +25,5 @@ func _exit_tree():
 	remove_custom_type("RaymarcherBox")
 	remove_custom_type("RaymarcherSphere")
 	remove_custom_type("RaymarcherTorus")
+	remove_custom_type("RaymarcherCylinder")
 

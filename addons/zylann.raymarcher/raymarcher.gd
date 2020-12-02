@@ -7,6 +7,7 @@ const SHADER_PATH = "res://addons/zylann.raymarcher/raymarch.shader"
 const SHAPE_SPHERE = 0
 const SHAPE_BOX = 1
 const SHAPE_TORUS = 2
+const SHAPE_CYLINDER = 3
 
 const OP_UNION = 0
 const OP_SUBTRACT = 1
@@ -17,6 +18,8 @@ const PARAM_SMOOTHNESS = 2
 const PARAM_RADIUS = 3
 const PARAM_SIZE = 4
 const PARAM_THICKNESS = 5
+const PARAM_HEIGHT = 6
+const PARAM_ROUNDING = 7
 
 const _param_names = [
 	"transform",
@@ -24,7 +27,9 @@ const _param_names = [
 	"smoothness",
 	"radius",
 	"size",
-	"thickness"
+	"thickness",
+	"height",
+	"rounding"
 ]
 
 const _param_types = [
@@ -33,6 +38,8 @@ const _param_types = [
 	TYPE_REAL,
 	TYPE_REAL,
 	TYPE_VECTOR3,
+	TYPE_REAL,
+	TYPE_REAL,
 	TYPE_REAL
 ]
 
@@ -65,6 +72,10 @@ class SceneObject:
 			SHAPE_TORUS:
 				params[PARAM_RADIUS] = Param.new(1.0)
 				params[PARAM_THICKNESS] = Param.new(0.25)
+			SHAPE_CYLINDER:
+				params[PARAM_RADIUS] = Param.new(0.5)
+				params[PARAM_HEIGHT] = Param.new(1.0)
+				params[PARAM_ROUNDING] = Param.new(0.0)
 
 
 class ShaderTemplate:
@@ -227,6 +238,12 @@ static func _get_shape_code(obj: SceneObject, pos_code: String) -> String:
 			return str("get_torus(", pos_code, 
 				", vec2(", _get_param_code(obj, PARAM_RADIUS), 
 				", ", _get_param_code(obj, PARAM_THICKNESS), "))")
+
+		SHAPE_CYLINDER:
+			return str("get_rounded_cylinder(", pos_code, 
+				", ", _get_param_code(obj, PARAM_RADIUS), 
+				", ", _get_param_code(obj, PARAM_ROUNDING),
+				", ", _get_param_code(obj, PARAM_HEIGHT), ")")
 		_:
 			assert(false)
 	return ""
