@@ -91,3 +91,10 @@ func _notification(what: int):
 			_set_param(Raymarcher.PARAM_TRANSFORM, global_transform.affine_inverse())
 		
 		# TODO Visibility?
+
+
+func _get_configuration_warning() -> String:
+	if _raymarcher == null:
+		return "This node must be child of a Raymarcher node."
+	return ""
+
