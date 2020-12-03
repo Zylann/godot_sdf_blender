@@ -7,6 +7,12 @@ const RaymarcherSphere = preload("../raymarcher_sphere.gd")
 const RaymarcherTorus = preload("../raymarcher_torus.gd")
 const RaymarcherCylinder = preload("../raymarcher_cylinder.gd")
 
+const SphereGizmo = preload("./sphere_gizmo.gd")
+
+var _gizmo_plugins := [
+	SphereGizmo.new()
+]
+
 
 func _get_icon(icon_name: String):
 	return load(str("res://addons/zylann.raymarcher/tools/icons/icon_", icon_name, ".svg"))
@@ -18,6 +24,10 @@ func _enter_tree():
 	add_custom_type("RaymarcherSphere", "Spatial", RaymarcherSphere, _get_icon("sdf_sphere"))
 	add_custom_type("RaymarcherTorus", "Spatial", RaymarcherTorus, _get_icon("sdf_torus"))
 	add_custom_type("RaymarcherCylinder", "Spatial", RaymarcherCylinder, _get_icon("sdf_cylinder"))
+	
+	for gizmo_plugin in _gizmo_plugins:
+		gizmo_plugin.set_undo_redo(get_undo_redo())
+		add_spatial_gizmo_plugin(gizmo_plugin)
 
 
 func _exit_tree():
@@ -27,3 +37,5 @@ func _exit_tree():
 	remove_custom_type("RaymarcherTorus")
 	remove_custom_type("RaymarcherCylinder")
 
+	for gizmo_plugin in _gizmo_plugins:
+		remove_spatial_gizmo_plugin(gizmo_plugin)

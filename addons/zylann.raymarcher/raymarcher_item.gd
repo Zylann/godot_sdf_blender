@@ -49,10 +49,16 @@ func get_smoothness() -> float:
 
 
 func _set_param(param_index: int, value):
+	var param : Raymarcher.Param = _data.params[param_index]
+
 	if _raymarcher != null:
 		_raymarcher.set_object_param(_data, param_index, value)
 	else:
-		_data.params[param_index].value = value
+		param.value = value
+
+	if Engine.editor_hint and is_inside_tree():
+		# Not all params need to update gizmos, but it's ok for now.
+		update_gizmo()
 
 
 func _get_param(param_index: int):

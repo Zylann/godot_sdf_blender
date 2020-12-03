@@ -3,7 +3,7 @@ tool
 extends "./raymarcher_item.gd"
 
 
-export(float) var radius setget set_radius, get_radius
+export(float) var radius : float setget set_radius, get_radius
 
 
 func _init():
