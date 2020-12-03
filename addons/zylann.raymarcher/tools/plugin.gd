@@ -8,9 +8,11 @@ const RaymarcherTorus = preload("../raymarcher_torus.gd")
 const RaymarcherCylinder = preload("../raymarcher_cylinder.gd")
 
 const SphereGizmo = preload("./sphere_gizmo.gd")
+const BoxGizmo = preload("./box_gizmo.gd")
 
 var _gizmo_plugins := [
-	SphereGizmo.new()
+	SphereGizmo.new(),
+	BoxGizmo.new()
 ]
 
 

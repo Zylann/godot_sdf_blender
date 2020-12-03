@@ -3,7 +3,7 @@ tool
 extends "./raymarcher_item.gd"
 
 
-export(Vector3) var size setget set_size, get_size
+export(Vector3) var size : Vector3 setget set_size, get_size
 export(float) var rounding setget set_rounding, get_rounding
 
 
@@ -11,7 +11,7 @@ func _init():
 	_data = Raymarcher.SceneObject.new(Raymarcher.SHAPE_BOX)
 
 
-func get_size() -> float:
+func get_size() -> Vector3:
 	return _data.params[Raymarcher.PARAM_SIZE].value
 
 
