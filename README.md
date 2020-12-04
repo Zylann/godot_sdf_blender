@@ -3,6 +3,8 @@ SDF Blender plugin for Godot Engine
 
 This plugin allows to create 3D models by blending simple shapes together, using Signed Distance Fields rendered with raymarching.
 
+![Screenshot of the plugin in editor](addons/zylann.sdf_blender/doc/screenshot.png)
+
 Advantages:
 - The result is fully detailed, because shapes are procedural and no polygons are involved.
 - It is much more natural to build organic structures, thanks to configurable smooth blending.
