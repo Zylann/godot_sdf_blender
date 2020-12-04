@@ -36,4 +36,8 @@ Usage
 - Create a `SDFContainer` node
 - Add shapes as children (`SDFSphere`, `SDFCylinder`, `SDFTorus`...)
 - Shapes will be blended in the order they appear in the tree.
-- Visuals might disappear if you look away from the origin of the `SDFContainer`. This is because Godot still "thinks" the container is a small 2x2 quad. To fix this, increase `extra_cull_margin`. In the future the plugin might be able to compute this automatically.
+- Use `Add` mode to make shapes merge with others
+- Use `Subtract` mode to carve into preceding shapes
+- Use `Color` to only apply coloring
+- Change `smoothness` to adjust how "blobby" the blending is with the other shapes
+- Visuals might disappear if you look away from the origin of the `SDFContainer`. This is because Godot still "thinks" the container is a small 2x2 quad, but it's not because of shader magic. To fix this, increase `extra_cull_margin`. In the future the plugin might be able to compute this automatically.
