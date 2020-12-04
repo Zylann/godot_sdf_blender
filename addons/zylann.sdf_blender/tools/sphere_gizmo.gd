@@ -1,7 +1,7 @@
 tool
 extends EditorSpatialGizmoPlugin
 
-const RaymarcherSphere = preload("../raymarcher_sphere.gd")
+const SDFSphere = preload("../sdf_sphere.gd")
 const Util = preload("../util/util.gd")
 
 const POINT_COUNT = 32
@@ -21,24 +21,25 @@ func set_undo_redo(ur: UndoRedo):
 
 
 func get_name() -> String:
-	return "RaymarcherSphereGizmo"
+	return "SDFSphereGizmo"
 
 
 func has_gizmo(spatial: Spatial) -> bool:
-	return spatial is RaymarcherSphere
+	return spatial is SDFSphere
 
 
 func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
-	var node : RaymarcherSphere = gizmo.get_spatial_node()
+	var node : SDFSphere = gizmo.get_spatial_node()
 	return node.radius
 
 
 func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_point: Vector2):
-	var node : RaymarcherSphere = gizmo.get_spatial_node()
+	var node : SDFSphere = gizmo.get_spatial_node()
 	var center := node.global_transform.origin
 	var pos := camera.project_ray_origin(screen_point)
 	var dir := camera.project_ray_normal(screen_point)
 	var plane := Util.Plane_from_point_normal(center, camera.global_transform.basis.z)
+	# TODO Scale?
 	var hit = plane.intersects_ray(pos, dir)
 	if hit != null:
 		var r : float = hit.distance_to(center)
@@ -46,13 +47,13 @@ func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_po
 
 
 func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := false):
-	var node : RaymarcherSphere = gizmo.get_spatial_node()
+	var node : SDFSphere = gizmo.get_spatial_node()
 	var ur := _undo_redo
 	
 	# Spheres have only one handle
 	assert(index == 0)
 	
-	ur.create_action("Set RaymarcherSphere radius")
+	ur.create_action("Set SDFSphere radius")
 	ur.add_do_property(node, "radius", node.radius)
 	ur.add_undo_property(node, "radius", restore)
 	ur.commit_action()
@@ -61,7 +62,7 @@ func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := fal
 func redraw(gizmo: EditorSpatialGizmo):
 	gizmo.clear()
 	
-	var node : RaymarcherSphere = gizmo.get_spatial_node()
+	var node : SDFSphere = gizmo.get_spatial_node()
 	var radius := node.radius
 
 	var points := []

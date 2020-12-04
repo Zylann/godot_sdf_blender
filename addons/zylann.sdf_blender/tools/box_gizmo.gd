@@ -1,7 +1,7 @@
 tool
 extends EditorSpatialGizmoPlugin
 
-const RaymarcherBox = preload("../raymarcher_box.gd")
+const SDFBox = preload("../sdf_box.gd")
 
 var _undo_redo : UndoRedo
 
@@ -46,20 +46,20 @@ func set_undo_redo(ur: UndoRedo):
 
 
 func get_name() -> String:
-	return "RaymarcherBoxGizmo"
+	return "SDFBoxGizmo"
 
 
 func has_gizmo(spatial: Spatial) -> bool:
-	return spatial is RaymarcherBox
+	return spatial is SDFBox
 
 
 func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
-	var node : RaymarcherBox = gizmo.get_spatial_node()
+	var node : SDFBox = gizmo.get_spatial_node()
 	return node.size[index]
 
 
 func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_point: Vector2):
-	var node : RaymarcherBox = gizmo.get_spatial_node()
+	var node : SDFBox = gizmo.get_spatial_node()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
 	var ray_dir := camera.project_ray_normal(screen_point)
@@ -81,10 +81,10 @@ func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_po
 
 
 func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := false):
-	var node : RaymarcherBox = gizmo.get_spatial_node()
+	var node : SDFBox = gizmo.get_spatial_node()
 	var ur := _undo_redo
 	
-	ur.create_action("Set RaymarcherBox size")
+	ur.create_action("Set SDFBox size")
 	ur.add_do_property(node, "radius", node.size)
 	ur.add_undo_property(node, "radius", restore)
 	ur.commit_action()
@@ -93,7 +93,7 @@ func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := fal
 func redraw(gizmo: EditorSpatialGizmo):
 	gizmo.clear()
 	
-	var node : RaymarcherBox = gizmo.get_spatial_node()
+	var node : SDFBox = gizmo.get_spatial_node()
 	var size := node.size
 
 	var points := []

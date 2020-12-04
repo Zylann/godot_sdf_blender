@@ -1,85 +1,10 @@
 tool
-#class_name Raymarcher
 extends MeshInstance
 
-var RaymarcherItem = load("res://addons/zylann.raymarcher/raymarcher_item.gd")
+const SDF = preload("./sdf.gd")
+var SDFItem = load("res://addons/zylann.sdf_blender/sdf_item.gd")
 
-const SHADER_PATH = "res://addons/zylann.raymarcher/raymarch.shader"
-
-const SHAPE_SPHERE = 0
-const SHAPE_BOX = 1
-const SHAPE_TORUS = 2
-const SHAPE_CYLINDER = 3
-
-const OP_UNION = 0
-const OP_SUBTRACT = 1
-const OP_COLOR = 2
-
-const PARAM_TRANSFORM = 0
-const PARAM_COLOR = 1
-const PARAM_SMOOTHNESS = 2
-const PARAM_RADIUS = 3
-const PARAM_SIZE = 4
-const PARAM_THICKNESS = 5
-const PARAM_HEIGHT = 6
-const PARAM_ROUNDING = 7
-
-const _param_names = [
-	"transform",
-	"color",
-	"smoothness",
-	"radius",
-	"size",
-	"thickness",
-	"height",
-	"rounding"
-]
-
-const _param_types = [
-	TYPE_TRANSFORM,
-	TYPE_COLOR,
-	TYPE_REAL,
-	TYPE_REAL,
-	TYPE_VECTOR3,
-	TYPE_REAL,
-	TYPE_REAL,
-	TYPE_REAL
-]
-
-class Param:
-	var value = null
-	var uniform := ""
-
-	func _init(p_v):
-		value = p_v
-
-
-class SceneObject:
-	var operation := OP_UNION
-	var shape := SHAPE_SPHERE
-	var params := {}
-	#var active := true
-
-	func _init(p_shape: int):
-		shape = p_shape
-
-		params[PARAM_TRANSFORM] = Param.new(Transform())
-		params[PARAM_COLOR] = Param.new(Color(1,1,1))
-		params[PARAM_SMOOTHNESS] = Param.new(0.2)
-
-		match shape:
-			SHAPE_SPHERE:
-				params[PARAM_RADIUS] = Param.new(1.0)
-			SHAPE_BOX:
-				params[PARAM_SIZE] = Param.new(Vector3(1,1,1))
-				params[PARAM_ROUNDING] = Param.new(0.0)
-			SHAPE_TORUS:
-				params[PARAM_RADIUS] = Param.new(1.0)
-				params[PARAM_THICKNESS] = Param.new(0.25)
-			SHAPE_CYLINDER:
-				params[PARAM_RADIUS] = Param.new(0.5)
-				params[PARAM_HEIGHT] = Param.new(1.0)
-				params[PARAM_ROUNDING] = Param.new(0.0)
+const SHADER_PATH = "res://addons/zylann.sdf_blender/raymarch.shader"
 
 
 class ShaderTemplate:
@@ -106,15 +31,7 @@ func _ready():
 	set_process(true)
 
 
-static func get_param_type(param_index) -> int:
-	return _param_types[param_index]
-
-
-static func get_param_name(param_index) -> int:
-	return _param_names[param_index]
-
-
-func set_object_param(so: SceneObject, param_index: int, value):
+func set_object_param(so: SDF.SceneObject, param_index: int, value):
 	var param = so.params[param_index]
 	if param.value != value:
 		param.value = value
@@ -122,7 +39,7 @@ func set_object_param(so: SceneObject, param_index: int, value):
 			_shader_material.set_shader_param(param.uniform, param.value)
 
 
-func set_object_operation(so: SceneObject, op: int):
+func set_object_operation(so: SDF.SceneObject, op: int):
 	if so.operation != op:
 		so.operation = op
 		_schedule_shader_update()
@@ -184,9 +101,14 @@ func _update_objects_from_children():
 	_objects.clear()
 	for child_index in get_child_count():
 		var child = get_child(child_index)
-		if child is RaymarcherItem:
-			_objects.append(child.get_raymarcher_data())
+		if child is SDFItem:
+			_objects.append(child.get_sdf_scene_object())
 	_update_shader()
+
+
+func _update_aabb():
+	# TODO
+	pass
 
 
 static func _load_shader_template(fpath: String) -> ShaderTemplate:
@@ -225,7 +147,7 @@ static func _make_uniform_name(index: int, name: String) -> String:
 	return str("u_shape", index, "_", name)
 
 
-static func _get_param_code(so: SceneObject, param_index: int) -> String:
+static func _get_param_code(so: SDF.SceneObject, param_index: int) -> String:
 	var param = so.params[param_index]
 	if param.uniform != "":
 		return param.uniform
@@ -246,27 +168,42 @@ static func _godot_type_to_shader_type(type: int):
 			assert(false)
 
 
-static func _get_shape_code(obj: SceneObject, pos_code: String) -> String:
+static func _godot_type_to_fcount(type: int) -> int:
+	match type:
+		TYPE_REAL:
+			return 1
+		TYPE_VECTOR3:
+			return 3
+		TYPE_COLOR:
+			return 4
+		TYPE_TRANSFORM:
+			return 16
+		_:
+			assert(false)
+	return 0
+
+
+static func _get_shape_code(obj: SDF.SceneObject, pos_code: String) -> String:
 	match obj.shape:
-		SHAPE_SPHERE:
-			return str(
-				"get_sphere(", pos_code, ", vec3(0.0), ", _get_param_code(obj, PARAM_RADIUS), ")")
+		SDF.SHAPE_SPHERE:
+			return str("get_sphere(", pos_code, ", vec3(0.0), ", 
+				_get_param_code(obj, SDF.PARAM_RADIUS), ")")
 
-		SHAPE_BOX:
+		SDF.SHAPE_BOX:
 			return str("get_rounded_box(", pos_code, 
-				", ", _get_param_code(obj, PARAM_SIZE), 
-				", ", _get_param_code(obj, PARAM_ROUNDING), ")")
+				", ", _get_param_code(obj, SDF.PARAM_SIZE), 
+				", ", _get_param_code(obj, SDF.PARAM_ROUNDING), ")")
 
-		SHAPE_TORUS:
+		SDF.SHAPE_TORUS:
 			return str("get_torus(", pos_code, 
-				", vec2(", _get_param_code(obj, PARAM_RADIUS), 
-				", ", _get_param_code(obj, PARAM_THICKNESS), "))")
+				", vec2(", _get_param_code(obj, SDF.PARAM_RADIUS), 
+				", ", _get_param_code(obj, SDF.PARAM_THICKNESS), "))")
 
-		SHAPE_CYLINDER:
+		SDF.SHAPE_CYLINDER:
 			return str("get_rounded_cylinder(", pos_code, 
-				", ", _get_param_code(obj, PARAM_RADIUS), 
-				", ", _get_param_code(obj, PARAM_ROUNDING),
-				", ", _get_param_code(obj, PARAM_HEIGHT), ")")
+				", ", _get_param_code(obj, SDF.PARAM_RADIUS), 
+				", ", _get_param_code(obj, SDF.PARAM_ROUNDING),
+				", ", _get_param_code(obj, SDF.PARAM_HEIGHT), ")")
 		_:
 			assert(false)
 	return ""
@@ -276,8 +213,10 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 	var uniforms := ""
 	var scene := ""
 
+	var fcount := 0
+
 	for object_index in len(objects):
-		var obj : SceneObject = objects[object_index]
+		var obj : SDF.SceneObject = objects[object_index]
 		#if not obj.active:
 		#	continue
 
@@ -288,31 +227,37 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 		
 		for param_index in obj.params:
 			var param = obj.params[param_index]
-			param.uniform = _make_uniform_name(object_index, _param_names[param_index])
-			var stype = _godot_type_to_shader_type(_param_types[param_index])
+			param.uniform = _make_uniform_name(object_index, SDF.get_param_name(param_index))
+			var type = SDF.get_param_type(param_index)
+			var stype = _godot_type_to_shader_type(type)
 			uniforms += str("uniform ", stype, " ", param.uniform, ";\n")
+			fcount += _godot_type_to_fcount(type)
 
-		var pos_code := str("(", _get_param_code(obj, PARAM_TRANSFORM), " * vec4(p, 1.0)).xyz")
+		var pos_code := str("(", _get_param_code(obj, SDF.PARAM_TRANSFORM), " * vec4(p, 1.0)).xyz")
 		var indent = "\t"
 		
 		var shape_code := _get_shape_code(obj, pos_code)
 		
 		match obj.operation:
-			OP_UNION:
+			SDF.OP_UNION:
 				scene += str(indent, "s = smooth_union_c(s.w, ", shape_code, ", s.rgb, ",
-					_get_param_code(obj, PARAM_COLOR), ".rgb, ", 
-					_get_param_code(obj, PARAM_SMOOTHNESS), ");\n")
-			OP_SUBTRACT:
-				scene += str(indent, "s = smooth_subtract_c(s.w, ", shape_code, ", s.rgb, ",
-					_get_param_code(obj, PARAM_COLOR), ".rgb, ", 
-					_get_param_code(obj, PARAM_SMOOTHNESS), ");\n")
+					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ", 
+					_get_param_code(obj, SDF.PARAM_SMOOTHNESS), ");\n")
 
-			OP_COLOR:
+			SDF.OP_SUBTRACT:
+				scene += str(indent, "s = smooth_subtract_c(s.w, ", shape_code, ", s.rgb, ",
+					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ", 
+					_get_param_code(obj, SDF.PARAM_SMOOTHNESS), ");\n")
+
+			SDF.OP_COLOR:
 				scene += str(indent, "s.rgb = smooth_color(s.w, ", shape_code, ", s.rgb, ",
-					_get_param_code(obj, PARAM_COLOR), ".rgb, ", 
-					_get_param_code(obj, PARAM_SMOOTHNESS), ");\n")
+					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ", 
+					_get_param_code(obj, SDF.PARAM_SMOOTHNESS), ");\n")
 			_:
 				assert(false)
+
+	# TODO Move this log in an editor utility
+	print("Fcount: ", fcount)
 
 	return str(
 		template.before_uniforms, 

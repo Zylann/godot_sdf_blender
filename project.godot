@@ -15,7 +15,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="Raymarcher"
+config/name="SDFBlender"
 config/icon="res://icon.png"
 
 [rendering]

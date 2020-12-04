@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/icon_sdf_container.svg-a7d74a0aa48add6db666e68fbc06a285.stex"
+path="res://.import/icon_sdf_cylinder.svg-585054cae17413b4b3f874ca917de6dd.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/zylann.raymarcher/tools/icons/icon_sdf_container.svg"
-dest_files=[ "res://.import/icon_sdf_container.svg-a7d74a0aa48add6db666e68fbc06a285.stex" ]
+source_file="res://addons/zylann.sdf_blender/tools/icons/icon_sdf_cylinder.svg"
+dest_files=[ "res://.import/icon_sdf_cylinder.svg-585054cae17413b4b3f874ca917de6dd.stex" ]
 
 [params]
 
