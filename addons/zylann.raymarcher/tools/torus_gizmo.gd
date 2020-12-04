@@ -1,10 +1,10 @@
 tool
 extends EditorSpatialGizmoPlugin
 
-const RaymarcherCylinder = preload("../raymarcher_cylinder.gd")
+const RaymarcherTorus = preload("../raymarcher_torus.gd")
 
 const INDEX_RADIUS = 0
-const INDEX_HEIGHT = 1
+const INDEX_THICKNESS = 1
 
 const POINT_COUNT = 32
 
@@ -23,36 +23,36 @@ func set_undo_redo(ur: UndoRedo):
 
 
 func get_name() -> String:
-	return "RaymarcherCylinderGizmo"
+	return "RaymarcherTorusGizmo"
 
 
 func has_gizmo(spatial: Spatial) -> bool:
-	return spatial is RaymarcherCylinder
+	return spatial is RaymarcherTorus
 
 
 func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
-	var node : RaymarcherCylinder = gizmo.get_spatial_node()
+	var node : RaymarcherTorus = gizmo.get_spatial_node()
 	match index:
 		INDEX_RADIUS:
 			return node.radius
-		INDEX_HEIGHT:
-			return node.height
+		INDEX_THICKNESS:
+			return node.thickness
 
 
 func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_point: Vector2):
-	var node : RaymarcherCylinder = gizmo.get_spatial_node()
+	var node : RaymarcherTorus = gizmo.get_spatial_node()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
 	var ray_dir := camera.project_ray_normal(screen_point)
 
 	var gtrans := node.global_transform
-	
+	var d := _get_axis_distance(gtrans, ray_pos, ray_dir, Vector3.AXIS_X)
+
 	match index:
 		INDEX_RADIUS:
-			node.radius = _get_axis_distance(gtrans, ray_pos, ray_dir, Vector3.AXIS_X)
-		
-		INDEX_HEIGHT:
-			node.height = _get_axis_distance(gtrans, ray_pos, ray_dir, Vector3.AXIS_Y)
+			node.radius = d
+		INDEX_THICKNESS:
+			node.thickness = d - node.radius
 
 
 static func _get_axis_distance(
@@ -69,53 +69,43 @@ static func _get_axis_distance(
 
 
 func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := false):
-	var node : RaymarcherCylinder = gizmo.get_spatial_node()
+	var node : RaymarcherTorus = gizmo.get_spatial_node()
 	var ur := _undo_redo
 	
 	match index:
 		INDEX_RADIUS:
-			ur.create_action("Set RaymarcherCylinder radius")
+			ur.create_action("Set RaymarcherTorus radius")
 			ur.add_do_property(node, "radius", node.radius)
 			ur.add_undo_property(node, "radius", restore)
 			ur.commit_action()
 
-		INDEX_HEIGHT:
-			ur.create_action("Set RaymarcherCylinder height")
-			ur.add_do_property(node, "height", node.height)
-			ur.add_undo_property(node, "height", restore)
+		INDEX_THICKNESS:
+			ur.create_action("Set RaymarcherTorus thickness")
+			ur.add_do_property(node, "thickness", node.thickness)
+			ur.add_undo_property(node, "thickness", restore)
 			ur.commit_action()
 
 
 func redraw(gizmo: EditorSpatialGizmo):
 	gizmo.clear()
 	
-	var node : RaymarcherCylinder = gizmo.get_spatial_node()
-	var height := node.height
+	var node : RaymarcherTorus = gizmo.get_spatial_node()
 	var radius := node.radius
-	
+	var thickness := node.thickness
+
 	var points := []
 	var angle_step := TAU / float(POINT_COUNT)
-	var heights = [-height, height]
-	var radius_xz = Vector3(radius, 1, radius)
+	var radii := [radius - thickness, radius + thickness]
 	
-	# Top and bottom caps
 	for i in POINT_COUNT:
 		var angle := float(i) * angle_step
-		for h in heights:
-			points.append(radius_xz * Vector3(cos(angle), h, sin(angle)))
-			points.append(radius_xz * Vector3(cos(angle + angle_step), h, sin(angle + angle_step)))
+		for r in radii:
+			points.append(r * Vector3(cos(angle), 0, sin(angle)))
+			points.append(r * Vector3(cos(angle + angle_step), 0, sin(angle + angle_step)))
 	
-	# Lines to connect caps
-	var lines_angle_step := TAU / 4.0
-	var lines_angle_start := PI / 4.0
-	for i in 4:
-		var p := polar2cartesian(radius, lines_angle_start + float(i) * lines_angle_step)
-		points.append(Vector3(p.x, -height, p.y))
-		points.append(Vector3(p.x, height, p.y))
-
 	var handles := [
 		Vector3(radius, 0, 0),
-		Vector3(0, height, 0)
+		Vector3(radius + thickness, 0, 0)
 	]
 	
 	gizmo.add_lines(PoolVector3Array(points), get_material("lines", gizmo), false)

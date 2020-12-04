@@ -2,8 +2,8 @@ tool
 extends "./raymarcher_item.gd"
 
 
-export(float) var radius setget set_radius, get_radius
-export(float) var thickness setget set_thickness, get_thickness
+export(float) var radius : float setget set_radius, get_radius
+export(float) var thickness : float setget set_thickness, get_thickness
 
 
 func _init():
