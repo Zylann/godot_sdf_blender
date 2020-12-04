@@ -2,9 +2,9 @@ tool
 extends "./raymarcher_item.gd"
 
 
-export(float) var radius setget set_radius, get_radius
-export(float) var height setget set_height, get_height
-export(float) var rounding setget set_rounding, get_rounding
+export(float) var radius : float setget set_radius, get_radius
+export(float) var height : float setget set_height, get_height
+export(float) var rounding : float setget set_rounding, get_rounding
 
 
 func _init():
