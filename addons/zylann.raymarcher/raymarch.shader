@@ -33,7 +33,7 @@ float get_torus(vec3 p, vec2 r) {
 }
 
 float get_rounded_cylinder(vec3 p, float radius, float rounding, float h) {
-	vec2 d = vec2(length(p.xz) - 2.0 * radius + rounding, abs(p.y) - h);
+	vec2 d = vec2(length(p.xz) - radius + rounding, abs(p.y) - h);
 	return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - rounding;
 }
 
