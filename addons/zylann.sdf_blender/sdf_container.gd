@@ -79,8 +79,8 @@ func _update_shader():
 	_shader_material = ShaderMaterial.new()
 
 	var code := _generate_shader_code(_objects, _shader_template)
-	# TODO This is for debugging
-	_debug_dump_text_file("generated_shader.txt", code)
+	# This is for debugging
+	#_debug_dump_text_file("generated_shader.txt", code)
 
 	shader.code = code
 	_shader_material.shader = shader
