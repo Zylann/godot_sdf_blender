@@ -132,12 +132,6 @@ vec4 raymarch(vec3 ray_origin, vec3 ray_dir, out vec3 out_normal, float time) {
 	return vec4(rgb, d);
 }
 
-float linear_depth_to_depth(float linear_depth, mat4 projection_matrix) {
-	vec4 clip_space_pos = projection_matrix * vec4(0.0, 0.0, linear_depth, 1.0);
-	float ndc_depth = clip_space_pos.z / clip_space_pos.w;
-	return ndc_depth * 0.5 + 0.5;
-}
-
 void fragment() {
 	// Could certainly be optimized I think
 	vec3 ndc = vec3(SCREEN_UV, 0.0) * 2.0 - 1.0;
@@ -154,14 +148,13 @@ void fragment() {
 	vec3 normal;
 	vec4 rm = raymarch(ray_origin, ray_dir, normal, time);
 	float d = rm.w;
-
-	// TODO Why the fuck is this not working?
-	// That 1/x is not right, but somehow it does something almost right?
-	DEPTH = 1.0/linear_depth_to_depth(d, PROJECTION_MATRIX);
-	if (d > 99.0) {
+	
+	if (d > MAX_DISTANCE) {
 		discard;
 	}
 	
+	vec4 sdf_ndc = PROJECTION_MATRIX * INV_CAMERA_MATRIX * vec4(ray_origin + ray_dir * d, 1.0);
+	DEPTH = (sdf_ndc.z / sdf_ndc.w) * 0.5 + 0.5;
 	NORMAL = (INV_CAMERA_MATRIX * vec4(normal, 0.0)).xyz;
 	
 	//ALBEDO = ray_dir * 0.1;
