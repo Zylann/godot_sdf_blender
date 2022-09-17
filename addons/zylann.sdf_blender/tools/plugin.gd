@@ -1,4 +1,4 @@
-tool
+@tool
 extends EditorPlugin
 
 const SDFContainer = preload("../sdf_container.gd")
@@ -12,7 +12,7 @@ const BoxGizmo = preload("./box_gizmo.gd")
 const CylinderGizmo = preload("./cylinder_gizmo.gd")
 const TorusGizmo = preload("./torus_gizmo.gd")
 
-var _gizmo_plugins := [
+var _gizmo_plugins : Array[Variant] = [
 	SphereGizmo.new(),
 	BoxGizmo.new(),
 	CylinderGizmo.new(),
@@ -25,11 +25,11 @@ func _get_icon(icon_name: String):
 
 
 func _enter_tree():
-	add_custom_type("SDFContainer", "MeshInstance", SDFContainer, _get_icon("sdf_container"))
-	add_custom_type("SDFBox", "Spatial", SDFBox, _get_icon("sdf_box"))
-	add_custom_type("SDFSphere", "Spatial", SDFSphere, _get_icon("sdf_sphere"))
-	add_custom_type("SDFTorus", "Spatial", SDFTorus, _get_icon("sdf_torus"))
-	add_custom_type("SDFCylinder", "Spatial", SDFCylinder, _get_icon("sdf_cylinder"))
+	add_custom_type("SDFContainer", "MeshInstance3D", SDFContainer, _get_icon("sdf_container"))
+	add_custom_type("SDFBox", "Node3D", SDFBox, _get_icon("sdf_box"))
+	add_custom_type("SDFSphere", "Node3D", SDFSphere, _get_icon("sdf_sphere"))
+	add_custom_type("SDFTorus", "Node3D", SDFTorus, _get_icon("sdf_torus"))
+	add_custom_type("SDFCylinder", "Node3D", SDFCylinder, _get_icon("sdf_cylinder"))
 	
 	for gizmo_plugin in _gizmo_plugins:
 		gizmo_plugin.set_undo_redo(get_undo_redo())

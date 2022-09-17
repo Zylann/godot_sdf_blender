@@ -1,10 +1,10 @@
-tool
-extends MeshInstance
+@tool
+extends MeshInstance3D
 
 const SDF = preload("./sdf.gd")
 var SDFItem = load("res://addons/zylann.sdf_blender/sdf_item.gd")
 
-const SHADER_PATH = "res://addons/zylann.sdf_blender/raymarch.shader"
+const SHADER_PATH = "res://addons/zylann.sdf_blender/raymarch.gdshader"
 
 
 class ShaderTemplate:
@@ -13,7 +13,7 @@ class ShaderTemplate:
 	var after_scene := ""
 
 
-var _objects := []
+var _objects : Array[SDF.SceneObject] = []
 var _next_id := 0
 var _shader_template : ShaderTemplate
 var _shader_material : ShaderMaterial
@@ -24,7 +24,7 @@ var _need_objects_update := true
 func _ready():
 	_shader_template = _load_shader_template(SHADER_PATH)
 	
-	var pm := QuadMesh.new()
+	var pm := PlaneMesh.new()
 	pm.size = Vector2(2, 2)
 	mesh = pm
 	
@@ -36,7 +36,7 @@ func set_object_param(so: SDF.SceneObject, param_index: int, value):
 	if param.value != value:
 		param.value = value
 		if param.uniform != "" and _shader_material != null:
-			_shader_material.set_shader_param(param.uniform, param.value)
+			_shader_material.set_shader_parameter(param.uniform, param.value)
 
 
 func set_object_operation(so: SDF.SceneObject, op: int):
@@ -72,7 +72,7 @@ func _update_shader():
 	if _shader_material == null:
 		shader = Shader.new()
 	else:
-		shader = _shader_material.shader
+		shader = _shader_material.gdshader
 
 	# I want to reset all material params but Godot does not have an API for that,
 	# so I just create a new material
@@ -80,10 +80,11 @@ func _update_shader():
 
 	var code := _generate_shader_code(_objects, _shader_template)
 	# This is for debugging
-	#_debug_dump_text_file("generated_shader.txt", code)
+	_debug_dump_text_file("generated_shader.txt", code)
 
 	shader.code = code
-	_shader_material.shader = shader
+	#_shader_material.gdshader = shader
+	_shader_material.set_shader_parameter("shader",shader)
 	material_override = _shader_material
 
 	_update_material()
@@ -94,7 +95,7 @@ func _update_material():
 		for param_index in obj.params:
 			var param = obj.params[param_index]
 			if param.uniform != "":
-				_shader_material.set_shader_param(param.uniform, param.value)
+				_shader_material.set_shader_parameter(param.uniform, param.value)
 
 
 func _update_objects_from_children():
@@ -156,11 +157,11 @@ static func _get_param_code(so: SDF.SceneObject, param_index: int) -> String:
 
 static func _godot_type_to_shader_type(type: int):
 	match type:
-		TYPE_REAL:
+		TYPE_FLOAT:
 			return "float"
 		TYPE_COLOR:
 			return "vec4"
-		TYPE_TRANSFORM:
+		TYPE_TRANSFORM3D:
 			return "mat4"
 		TYPE_VECTOR3:
 			return "vec3"
@@ -170,13 +171,13 @@ static func _godot_type_to_shader_type(type: int):
 
 static func _godot_type_to_fcount(type: int) -> int:
 	match type:
-		TYPE_REAL:
+		TYPE_FLOAT:
 			return 1
 		TYPE_VECTOR3:
 			return 3
 		TYPE_COLOR:
 			return 4
-		TYPE_TRANSFORM:
+		TYPE_TRANSFORM3D:
 			return 16
 		_:
 			assert(false)
@@ -209,7 +210,7 @@ static func _get_shape_code(obj: SDF.SceneObject, pos_code: String) -> String:
 	return ""
 
 
-static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> String:
+static func _generate_shader_code(objects : Array[SDF.SceneObject], template: ShaderTemplate) -> String:
 	var uniforms := ""
 	var scene := ""
 
@@ -221,7 +222,7 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 		#	continue
 
 		# Note: the amount of uniforms in a shader is not unlimited.
-		# There is a point the driver will say "no", depending on the graphics card.
+		# There is a point the driver will say "no", depending checked the graphics card.
 		# In the future, if more shapes are needed within one container,
 		# we could "freeze" some of the params and make them consts instead of uniforms
 		

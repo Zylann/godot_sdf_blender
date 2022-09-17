@@ -1,4 +1,4 @@
-tool
+@tool
 
 # Constants and data classes
 
@@ -32,14 +32,14 @@ const _param_names = [
 ]
 
 const _param_types = [
-	TYPE_TRANSFORM,
+	TYPE_TRANSFORM3D,
 	TYPE_COLOR,
-	TYPE_REAL,
-	TYPE_REAL,
+	TYPE_FLOAT,
+	TYPE_FLOAT,
 	TYPE_VECTOR3,
-	TYPE_REAL,
-	TYPE_REAL,
-	TYPE_REAL
+	TYPE_FLOAT,
+	TYPE_FLOAT,
+	TYPE_FLOAT
 ]
 
 class Param:
@@ -59,7 +59,7 @@ class SceneObject:
 	func _init(p_shape: int):
 		shape = p_shape
 
-		params[PARAM_TRANSFORM] = Param.new(Transform())
+		params[PARAM_TRANSFORM] = Param.new(Transform3D())
 		params[PARAM_COLOR] = Param.new(Color(1,1,1))
 		params[PARAM_SMOOTHNESS] = Param.new(0.2)
 

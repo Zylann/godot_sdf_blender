@@ -1,5 +1,5 @@
-tool
-extends EditorSpatialGizmoPlugin
+@tool
+extends EditorNode3DGizmoPlugin
 
 const SDFSphere = preload("../sdf_sphere.gd")
 const Util = preload("../util/util.gd")
@@ -11,7 +11,7 @@ var _undo_redo : UndoRedo
 
 func _init():
 	create_handle_material("handles_billboard", true)
-	# TODO This is supposed to create an "on-top" material, but it still renders behind...
+	# TODO This is supposed to create an "checked-top" material, but it still renders behind...
 	# See https://github.com/godotengine/godot/issues/44077
 	create_material("lines_billboard", Color(1, 1, 1), true, true, false)
 
@@ -24,16 +24,16 @@ func get_name() -> String:
 	return "SDFSphereGizmo"
 
 
-func has_gizmo(spatial: Spatial) -> bool:
+func has_gizmo(spatial: Node3D) -> bool:
 	return spatial is SDFSphere
 
 
-func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
+func _get_handle_value(gizmo: EditorNode3DGizmo, index: int, secondary := false):
 	var node : SDFSphere = gizmo.get_spatial_node()
 	return node.radius
 
 
-func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_point: Vector2):
+func set_handle(gizmo: EditorNode3DGizmo, index: int, camera: Camera3D, screen_point: Vector2):
 	var node : SDFSphere = gizmo.get_spatial_node()
 	var center := node.global_transform.origin
 	var pos := camera.project_ray_origin(screen_point)
@@ -46,7 +46,7 @@ func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_po
 		node.radius = r
 
 
-func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := false):
+func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, cancel := false):
 	var node : SDFSphere = gizmo.get_spatial_node()
 	var ur := _undo_redo
 	
@@ -59,7 +59,7 @@ func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := fal
 	ur.commit_action()
 
 
-func redraw(gizmo: EditorSpatialGizmo):
+func redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
 	
 	var node : SDFSphere = gizmo.get_spatial_node()
@@ -74,8 +74,8 @@ func redraw(gizmo: EditorSpatialGizmo):
 		points.append(radius * Vector3(cos(angle + angle_step), sin(angle + angle_step), 0.0))
 
 	# Why do we have to send "true" for the billboard parameter, when the material already has it?
-	gizmo.add_lines(PoolVector3Array(points), get_material("lines_billboard", gizmo), true)
+	gizmo.add_lines(PackedVector3Array(points), get_material("lines_billboard", gizmo), true)
 	
-	var handles := PoolVector3Array([Vector3(radius, 0, 0)])
-	gizmo.add_handles(handles, get_material("handles_billboard", gizmo), true)
-
+	var handles := PackedVector3Array([Vector3(radius, 0, 0)])
+	var ids:=PackedInt32Array()
+	gizmo.add_handles(handles, get_material("handles_billboard", gizmo), ids, false, false )

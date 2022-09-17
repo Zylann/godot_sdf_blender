@@ -1,5 +1,5 @@
-tool
-extends EditorSpatialGizmoPlugin
+@tool
+extends EditorNode3DGizmoPlugin
 
 const SDFBox = preload("../sdf_box.gd")
 
@@ -36,7 +36,7 @@ const _cube_lines = [
 
 func _init():
 	create_handle_material("handles_billboard", false)
-	# TODO This is supposed to create an "on-top" material, but it still renders behind...
+	# TODO This is supposed to create an "checked-top" material, but it still renders behind...
 	# See https://github.com/godotengine/godot/issues/44077
 	create_material("lines", Color(1, 1, 1), false, true, false)
 
@@ -49,16 +49,16 @@ func get_name() -> String:
 	return "SDFBoxGizmo"
 
 
-func has_gizmo(spatial: Spatial) -> bool:
+func has_gizmo(spatial: Node3D) -> bool:
 	return spatial is SDFBox
 
 
-func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
+func _get_handle_value(gizmo: EditorNode3DGizmo, index: int, secondary := false):
 	var node : SDFBox = gizmo.get_spatial_node()
 	return node.size[index]
 
 
-func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_point: Vector2):
+func set_handle(gizmo: EditorNode3DGizmo, index: int, camera: Camera3D, screen_point: Vector2):
 	var node : SDFBox = gizmo.get_spatial_node()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
@@ -71,7 +71,7 @@ func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_po
 	var seg0 := gtrans.origin - 4096.0 * gtrans.basis[axis]
 	var seg1 := gtrans.origin + 4096.0 * gtrans.basis[axis]
 
-	var hits := Geometry.get_closest_points_between_segments(
+	var hits := Geometry3D.get_closest_points_between_segments(
 		seg0, seg1, ray_pos, ray_pos + ray_dir * 4096.0)
 
 	var hit = gtrans.affine_inverse() * hits[0]
@@ -80,7 +80,7 @@ func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_po
 	node.size = size
 
 
-func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := false):
+func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, cancel := false):
 	var node : SDFBox = gizmo.get_spatial_node()
 	var ur := _undo_redo
 	
@@ -90,7 +90,7 @@ func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := fal
 	ur.commit_action()
 
 
-func redraw(gizmo: EditorSpatialGizmo):
+func redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
 	
 	var node : SDFBox = gizmo.get_spatial_node()
@@ -106,7 +106,8 @@ func redraw(gizmo: EditorSpatialGizmo):
 		h[axis] = size[axis]
 		handles.append(h)
 	
-	gizmo.add_lines(PoolVector3Array(points), get_material("lines", gizmo), false)
-	gizmo.add_handles(PoolVector3Array(handles), get_material("handles_billboard", gizmo), false)
+	gizmo.add_lines(PackedVector3Array(points), get_material("lines", gizmo), false)
+	var ids:=PackedInt32Array()
+	gizmo.add_handles(PackedVector3Array(handles), get_material("handles_billboard", gizmo), ids, true, false)
 
 
