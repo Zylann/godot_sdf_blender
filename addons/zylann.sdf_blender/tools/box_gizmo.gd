@@ -36,7 +36,7 @@ const _cube_lines = [
 
 func _init():
 	create_handle_material("handles_billboard", false)
-	# TODO This is supposed to create an "checked-top" material, but it still renders behind...
+	# TODO This is supposed to create an "on-top" material, but it still renders behind...
 	# See https://github.com/godotengine/godot/issues/44077
 	create_material("lines", Color(1, 1, 1), false, true, false)
 

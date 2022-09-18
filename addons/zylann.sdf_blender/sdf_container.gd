@@ -13,7 +13,7 @@ class ShaderTemplate:
 	var after_scene := ""
 
 
-var _objects : Array[SDF.SceneObject] = []
+var _objects : Array= []
 var _next_id := 0
 var _shader_template : ShaderTemplate
 var _shader_material : ShaderMaterial
@@ -26,6 +26,8 @@ func _ready():
 	
 	var pm := PlaneMesh.new()
 	pm.size = Vector2(2, 2)
+	pm.orientation = PlaneMesh.FACE_Z
+	pm.flip_faces = true
 	mesh = pm
 	
 	set_process(true)
@@ -72,7 +74,7 @@ func _update_shader():
 	if _shader_material == null:
 		shader = Shader.new()
 	else:
-		shader = _shader_material.gdshader
+		shader = _shader_material.shader
 
 	# I want to reset all material params but Godot does not have an API for that,
 	# so I just create a new material
@@ -80,12 +82,16 @@ func _update_shader():
 
 	var code := _generate_shader_code(_objects, _shader_template)
 	# This is for debugging
-	_debug_dump_text_file("generated_shader.txt", code)
+	#_debug_dump_text_file("generated_shader.txt", code)
 
 	shader.code = code
-	#_shader_material.gdshader = shader
-	_shader_material.set_shader_parameter("shader",shader)
-	material_override = _shader_material
+	#_shader_material.shader = shader
+	#_shader_material.set_shader_parameter("resource_name", "some_name")
+	#_shader_material.set_shader_parameter("shader",shader)
+	_shader_material.set_shader(shader)
+	
+	set_material_override(_shader_material)
+	
 
 	_update_material()
 
@@ -148,7 +154,7 @@ static func _make_uniform_name(index: int, name: String) -> String:
 	return str("u_shape", index, "_", name)
 
 
-static func _get_param_code(so: SDF.SceneObject, param_index: int) -> String:
+static func _get_param_code(so, param_index: int) -> String:
 	var param = so.params[param_index]
 	if param.uniform != "":
 		return param.uniform
@@ -184,7 +190,7 @@ static func _godot_type_to_fcount(type: int) -> int:
 	return 0
 
 
-static func _get_shape_code(obj: SDF.SceneObject, pos_code: String) -> String:
+static func _get_shape_code(obj, pos_code: String) -> String:
 	match obj.shape:
 		SDF.SHAPE_SPHERE:
 			return str("get_sphere(", pos_code, ", vec3(0.0), ", 
@@ -210,22 +216,21 @@ static func _get_shape_code(obj: SDF.SceneObject, pos_code: String) -> String:
 	return ""
 
 
-static func _generate_shader_code(objects : Array[SDF.SceneObject], template: ShaderTemplate) -> String:
+static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> String:
 	var uniforms := ""
 	var scene := ""
 
 	var fcount := 0
 
 	for object_index in len(objects):
-		var obj : SDF.SceneObject = objects[object_index]
+		var obj = objects[object_index] 
 		#if not obj.active:
 		#	continue
 
 		# Note: the amount of uniforms in a shader is not unlimited.
-		# There is a point the driver will say "no", depending checked the graphics card.
+		# There is a point the driver will say "no", depending on the graphics card.
 		# In the future, if more shapes are needed within one container,
 		# we could "freeze" some of the params and make them consts instead of uniforms
-		
 		for param_index in obj.params:
 			var param = obj.params[param_index]
 			param.uniform = _make_uniform_name(object_index, SDF.get_param_name(param_index))
