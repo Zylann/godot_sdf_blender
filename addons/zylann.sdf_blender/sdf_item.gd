@@ -32,14 +32,13 @@ var _container : SDFContainer
 
 
 func _init():
-	set_notify_transform(true)
+	set_notify_transform(true) # requires valid gizmo
 
 
 
 
 func _set_param(param_index: int, value):
 	var param : Variant = _data.params[param_index]
-	
 	if _container != null:
 		_container.set_object_param(_data, param_index, value)
 	else:

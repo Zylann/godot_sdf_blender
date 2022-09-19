@@ -33,7 +33,7 @@ func _ready():
 	set_process(true)
 
 
-func set_object_param(so: SDF.SceneObject, param_index: int, value):
+func set_object_param(so, param_index: int, value):
 	var param = so.params[param_index]
 	if param.value != value:
 		param.value = value
@@ -41,7 +41,7 @@ func set_object_param(so: SDF.SceneObject, param_index: int, value):
 			_shader_material.set_shader_parameter(param.uniform, param.value)
 
 
-func set_object_operation(so: SDF.SceneObject, op: int):
+func set_object_operation(so, op: int):
 	if so.operation != op:
 		so.operation = op
 		_schedule_shader_update()
@@ -82,7 +82,7 @@ func _update_shader():
 
 	var code := _generate_shader_code(_objects, _shader_template)
 	# This is for debugging
-	#_debug_dump_text_file("generated_shader.txt", code)
+	_debug_dump_text_file("generated_shader.txt", code)
 
 	shader.code = code
 	#_shader_material.shader = shader

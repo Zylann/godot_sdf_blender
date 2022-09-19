@@ -3,7 +3,7 @@ extends EditorNode3DGizmoPlugin
 
 const SDFBox = preload("../sdf_box.gd")
 
-var _undo_redo : UndoRedo
+var _undo_redo : EditorUndoRedoManager
 
 const _cube_lines = [
 	Vector3(-1, -1, -1),
@@ -41,7 +41,7 @@ func _init():
 	create_material("lines", Color(1, 1, 1), false, true, false)
 
 
-func set_undo_redo(ur: UndoRedo):
+func set_undo_redo(ur: EditorUndoRedoManager):
 	_undo_redo = ur
 
 

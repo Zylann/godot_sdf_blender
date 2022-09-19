@@ -6,7 +6,7 @@ const Util = preload("../util/util.gd")
 
 const POINT_COUNT = 32
 
-var _undo_redo : UndoRedo
+var _undo_redo : EditorUndoRedoManager
 
 
 func _init():
@@ -16,7 +16,7 @@ func _init():
 	create_material("lines_billboard", Color(1, 1, 1), true, true, false)
 
 
-func set_undo_redo(ur: UndoRedo):
+func set_undo_redo(ur: EditorUndoRedoManager):
 	_undo_redo = ur
 
 
