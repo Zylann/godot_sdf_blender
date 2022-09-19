@@ -85,9 +85,6 @@ func _update_shader():
 	_debug_dump_text_file("generated_shader.txt", code)
 
 	shader.code = code
-	#_shader_material.shader = shader
-	#_shader_material.set_shader_parameter("resource_name", "some_name")
-	#_shader_material.set_shader_parameter("shader",shader)
 	_shader_material.set_shader(shader)
 	
 	set_material_override(_shader_material)
