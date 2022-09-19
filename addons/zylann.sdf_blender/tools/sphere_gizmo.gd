@@ -24,7 +24,7 @@ func get_name() -> String:
 	return "SDFSphereGizmo"
 
 
-func has_gizmo(spatial: Node3D) -> bool:
+func _has_gizmo(spatial: Node3D) -> bool:
 	return spatial is SDFSphere
 
 
@@ -33,7 +33,7 @@ func _get_handle_value(gizmo: EditorNode3DGizmo, index: int, secondary := false)
 	return node.radius
 
 
-func set_handle(gizmo: EditorNode3DGizmo, index: int, camera: Camera3D, screen_point: Vector2):
+func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: Camera3D, screen_point: Vector2):
 	var node : SDFSphere = gizmo.get_spatial_node()
 	var center := node.global_transform.origin
 	var pos := camera.project_ray_origin(screen_point)
@@ -59,7 +59,7 @@ func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, ca
 	ur.commit_action()
 
 
-func redraw(gizmo: EditorNode3DGizmo):
+func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
 	
 	var node : SDFSphere = gizmo.get_spatial_node()
@@ -78,4 +78,4 @@ func redraw(gizmo: EditorNode3DGizmo):
 	
 	var handles := PackedVector3Array([Vector3(radius, 0, 0)])
 	var ids:=PackedInt32Array()
-	gizmo.add_handles(handles, get_material("handles_billboard", gizmo), ids, false, false )
+	gizmo.add_handles(handles, get_material("handles_billboard", gizmo), ids, true, false )

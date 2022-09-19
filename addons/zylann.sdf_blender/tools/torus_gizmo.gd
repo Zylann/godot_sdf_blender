@@ -26,7 +26,7 @@ func get_name() -> String:
 	return "SDFTorusGizmo"
 
 
-func has_gizmo(spatial: Node3D) -> bool:
+func _has_gizmo(spatial: Node3D) -> bool:
 	return spatial is SDFTorus
 
 
@@ -39,7 +39,7 @@ func _get_handle_value(gizmo: EditorNode3DGizmo, index:int, secondary:=false):
 			return node.thickness
 
 
-func set_handle(gizmo: EditorNode3DGizmo, index: int, camera: Camera3D, screen_point: Vector2):
+func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: Camera3D, screen_point: Vector2):
 	var node : SDFTorus = gizmo.get_spatial_node()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
@@ -86,7 +86,7 @@ func _commit_handle(gizmo: EditorNode3DGizmo, index: int,secondary, restore, can
 			ur.commit_action()
 
 
-func redraw(gizmo: EditorNode3DGizmo):
+func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
 	
 	var node : SDFTorus = gizmo.get_spatial_node()
