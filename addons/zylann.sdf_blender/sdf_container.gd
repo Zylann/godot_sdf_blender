@@ -1,10 +1,10 @@
-tool
-extends MeshInstance
+@tool
+extends MeshInstance3D
 
 const SDF = preload("./sdf.gd")
 var SDFItem = load("res://addons/zylann.sdf_blender/sdf_item.gd")
 
-const SHADER_PATH = "res://addons/zylann.sdf_blender/raymarch.shader"
+const SHADER_PATH = "res://addons/zylann.sdf_blender/raymarch.gdshader"
 
 
 class ShaderTemplate:
@@ -13,7 +13,7 @@ class ShaderTemplate:
 	var after_scene := ""
 
 
-var _objects := []
+var _objects : Array= []
 var _next_id := 0
 var _shader_template : ShaderTemplate
 var _shader_material : ShaderMaterial
@@ -23,23 +23,25 @@ var _need_objects_update := true
 
 func _ready():
 	_shader_template = _load_shader_template(SHADER_PATH)
-	
-	var pm := QuadMesh.new()
+	var pm := PlaneMesh.new()
 	pm.size = Vector2(2, 2)
+	pm.orientation = PlaneMesh.FACE_Z
+	pm.flip_faces = true
 	mesh = pm
 	
 	set_process(true)
+	_update_shader()
 
 
-func set_object_param(so: SDF.SceneObject, param_index: int, value):
+func set_object_param(so, param_index: int, value):
 	var param = so.params[param_index]
 	if param.value != value:
 		param.value = value
 		if param.uniform != "" and _shader_material != null:
-			_shader_material.set_shader_param(param.uniform, param.value)
+			_shader_material.set_shader_parameter(param.uniform, param.value)
+			
 
-
-func set_object_operation(so: SDF.SceneObject, op: int):
+func set_object_operation(so, op: int):
 	if so.operation != op:
 		so.operation = op
 		_schedule_shader_update()
@@ -83,9 +85,10 @@ func _update_shader():
 	#_debug_dump_text_file("generated_shader.txt", code)
 
 	shader.code = code
-	_shader_material.shader = shader
-	material_override = _shader_material
-
+	_shader_material.set_shader(shader)
+	
+	set_material_override(_shader_material)
+	
 	_update_material()
 
 
@@ -94,7 +97,7 @@ func _update_material():
 		for param_index in obj.params:
 			var param = obj.params[param_index]
 			if param.uniform != "":
-				_shader_material.set_shader_param(param.uniform, param.value)
+				_shader_material.set_shader_parameter(param.uniform, param.value)
 
 
 func _update_objects_from_children():
@@ -147,7 +150,7 @@ static func _make_uniform_name(index: int, name: String) -> String:
 	return str("u_shape", index, "_", name)
 
 
-static func _get_param_code(so: SDF.SceneObject, param_index: int) -> String:
+static func _get_param_code(so, param_index: int) -> String:
 	var param = so.params[param_index]
 	if param.uniform != "":
 		return param.uniform
@@ -156,11 +159,11 @@ static func _get_param_code(so: SDF.SceneObject, param_index: int) -> String:
 
 static func _godot_type_to_shader_type(type: int):
 	match type:
-		TYPE_REAL:
+		TYPE_FLOAT:
 			return "float"
 		TYPE_COLOR:
 			return "vec4"
-		TYPE_TRANSFORM:
+		TYPE_TRANSFORM3D:
 			return "mat4"
 		TYPE_VECTOR3:
 			return "vec3"
@@ -170,20 +173,20 @@ static func _godot_type_to_shader_type(type: int):
 
 static func _godot_type_to_fcount(type: int) -> int:
 	match type:
-		TYPE_REAL:
+		TYPE_FLOAT:
 			return 1
 		TYPE_VECTOR3:
 			return 3
 		TYPE_COLOR:
 			return 4
-		TYPE_TRANSFORM:
+		TYPE_TRANSFORM3D:
 			return 16
 		_:
 			assert(false)
 	return 0
 
 
-static func _get_shape_code(obj: SDF.SceneObject, pos_code: String) -> String:
+static func _get_shape_code(obj, pos_code: String) -> String:
 	match obj.shape:
 		SDF.SHAPE_SPHERE:
 			return str("get_sphere(", pos_code, ", vec3(0.0), ", 
@@ -216,7 +219,7 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 	var fcount := 0
 
 	for object_index in len(objects):
-		var obj : SDF.SceneObject = objects[object_index]
+		var obj = objects[object_index] 
 		#if not obj.active:
 		#	continue
 
@@ -224,7 +227,6 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 		# There is a point the driver will say "no", depending on the graphics card.
 		# In the future, if more shapes are needed within one container,
 		# we could "freeze" some of the params and make them consts instead of uniforms
-		
 		for param_index in obj.params:
 			var param = obj.params[param_index]
 			param.uniform = _make_uniform_name(object_index, SDF.get_param_name(param_index))

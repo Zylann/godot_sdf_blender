@@ -1,64 +1,54 @@
-tool
-extends Spatial
+@tool
+extends Node3D
 
 const SDF = preload("./sdf.gd")
 const SDFContainer = preload("./sdf_container.gd")
 
-
-export(int, "Add", "Subtract", "Color") var operation setget set_operation, get_operation
-export(Color) var color = Color(1,1,1) setget set_color, get_color
-export(float) var smoothness = 0.2 setget set_smoothness, get_smoothness
+@export_enum("Add", "Subtract", "Color") var operation :
+	get:
+		return _data.operation
+	set(op):
+		operation = op # Useless but doing it anyways
+		if _container != null:
+			_container.set_object_operation(_data, op)
+		else:
+			_data.operation = op
+@export var color: Color = Color(1,1,1) :
+	get:
+		return _data.params[SDF.PARAM_COLOR].value
+	set(col):
+		color = col # Useless but doing it anyways
+		_set_param(SDF.PARAM_COLOR, col)
+@export var smoothness: float = 0.2 :
+	get:
+		return _data.params[SDF.PARAM_SMOOTHNESS].value
+	set(s):
+		s = clamp(s, 0.0, 1.0)
+		smoothness = s # Useless but doing it anyways
+		_set_param(SDF.PARAM_SMOOTHNESS, s)
 
 var _data : SDF.SceneObject
 var _container : SDFContainer
 
 
 func _init():
-	set_notify_transform(true)
-
-
-func set_operation(op: int):
-	operation = op # Useless but doing it anyways
-	if _container != null:
-		_container.set_object_operation(_data, op)
-	else:
-		_data.operation = op
-
-
-func get_operation() -> int:
-	return _data.operation
-
-
-func set_color(col: Color):
-	color = col # Useless but doing it anyways
-	_set_param(SDF.PARAM_COLOR, col)
-
-
-func get_color() -> Color:
-	return _data.params[SDF.PARAM_COLOR].value
-
-
-func set_smoothness(s: float):
-	s = clamp(s, 0.0, 1.0)
-	smoothness = s # Useless but doing it anyways
-	_set_param(SDF.PARAM_SMOOTHNESS, s)
-
-
-func get_smoothness() -> float:
-	return _data.params[SDF.PARAM_SMOOTHNESS].value
+	set_notify_transform(true) # requires valid gizmo
+	
+	
+func _ready():
+	_data.params[0].value = global_transform.affine_inverse()
 
 
 func _set_param(param_index: int, value):
-	var param : SDF.Param = _data.params[param_index]
-
+	var param : Variant = _data.params[param_index]
 	if _container != null:
 		_container.set_object_param(_data, param_index, value)
 	else:
 		param.value = value
-
-	if Engine.editor_hint and is_inside_tree():
+	
+	if Engine.is_editor_hint() and is_inside_tree():
 		# Not all params need to update gizmos, but it's ok for now.
-		update_gizmo()
+		update_gizmos()
 
 
 func _get_param(param_index: int):
@@ -99,8 +89,9 @@ func _notification(what: int):
 		# TODO Visibility?
 
 
-func _get_configuration_warning() -> String:
+func _get_configuration_warnings() -> PackedStringArray :
+	var msg : PackedStringArray = PackedStringArray()
 	if _container == null:
-		return "This node must be child of a SDFContainer node."
-	return ""
+		msg.append("This node must be child of a SDFContainer node.")
+	return msg
 

@@ -1,5 +1,5 @@
 shader_type spatial;
-//render_mode unshaded;//, depth_draw_alpha_prepass;
+//render_mode unshaded;//, depth_draw_opaque;
 
 //<uniforms>
 //</uniforms>
@@ -137,8 +137,8 @@ void fragment() {
 	vec3 ndc = vec3(SCREEN_UV, 0.0) * 2.0 - 1.0;
 	vec4 view_coords = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	view_coords.xyz /= view_coords.w;
-	vec3 world_cam_pos = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-	vec4 world_coords = CAMERA_MATRIX * vec4(view_coords.xyz, 1.0);
+	vec3 world_cam_pos = (INV_VIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	vec4 world_coords = INV_VIEW_MATRIX * vec4(view_coords.xyz, 1.0);
 	
 	vec3 ray_origin = world_coords.xyz;
 	vec3 ray_dir = normalize(world_coords.xyz - world_cam_pos);
@@ -153,9 +153,9 @@ void fragment() {
 		discard;
 	}
 	
-	vec4 sdf_ndc = PROJECTION_MATRIX * INV_CAMERA_MATRIX * vec4(ray_origin + ray_dir * d, 1.0);
+	vec4 sdf_ndc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(ray_origin + ray_dir * d, 1.0);
 	DEPTH = (sdf_ndc.z / sdf_ndc.w) * 0.5 + 0.5;
-	NORMAL = (INV_CAMERA_MATRIX * vec4(normal, 0.0)).xyz;
+	NORMAL = (VIEW_MATRIX * vec4(normal, 0.0)).xyz;
 	
 	//ALBEDO = ray_dir * 0.1;
 	ALBEDO = rm.rgb;
