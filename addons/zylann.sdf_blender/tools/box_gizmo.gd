@@ -39,6 +39,7 @@ func _init():
 	# TODO This is supposed to create an "on-top" material, but it still renders behind...
 	# See https://github.com/godotengine/godot/issues/44077
 	create_material("lines", Color(1, 1, 1), false, true, false)
+	
 
 
 func set_undo_redo(ur: EditorUndoRedoManager):
@@ -88,7 +89,7 @@ func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, ca
 	ur.add_do_property(node, "radius", node.size)
 	ur.add_undo_property(node, "radius", restore)
 	ur.commit_action()
-
+	
 
 func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()

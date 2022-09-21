@@ -20,6 +20,7 @@ const PARAM_THICKNESS = 5
 const PARAM_HEIGHT = 6
 const PARAM_ROUNDING = 7
 
+
 const _param_names = [
 	"transform",
 	"color",

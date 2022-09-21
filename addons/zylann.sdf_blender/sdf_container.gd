@@ -23,7 +23,6 @@ var _need_objects_update := true
 
 func _ready():
 	_shader_template = _load_shader_template(SHADER_PATH)
-	
 	var pm := PlaneMesh.new()
 	pm.size = Vector2(2, 2)
 	pm.orientation = PlaneMesh.FACE_Z
@@ -40,7 +39,7 @@ func set_object_param(so, param_index: int, value):
 		param.value = value
 		if param.uniform != "" and _shader_material != null:
 			_shader_material.set_shader_parameter(param.uniform, param.value)
-
+			
 
 func set_object_operation(so, op: int):
 	if so.operation != op:
@@ -90,7 +89,6 @@ func _update_shader():
 	
 	set_material_override(_shader_material)
 	
-
 	_update_material()
 
 
