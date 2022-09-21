@@ -20,7 +20,7 @@ config/icon="res://icon.png"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/zylann.sdf_blender/plugin.cfg")
 
 [rendering]
 

@@ -33,8 +33,10 @@ var _container : SDFContainer
 
 func _init():
 	set_notify_transform(true) # requires valid gizmo
-
-
+	
+	
+func _ready():
+	_data.params[0].value = global_transform.affine_inverse()
 
 
 func _set_param(param_index: int, value):
@@ -43,7 +45,7 @@ func _set_param(param_index: int, value):
 		_container.set_object_param(_data, param_index, value)
 	else:
 		param.value = value
-
+	
 	if Engine.is_editor_hint() and is_inside_tree():
 		# Not all params need to update gizmos, but it's ok for now.
 		update_gizmos()

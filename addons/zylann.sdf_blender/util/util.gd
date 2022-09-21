@@ -1,4 +1,4 @@
-tool
+@tool
 
 
 # See https://github.com/godotengine/godot/issues/21113
@@ -37,8 +37,8 @@ static func Plane_from_point_normal(p: Vector3, n: Vector3) -> Plane:
 #
 #	var arrays := []
 #	arrays.resize(ArrayMesh.ARRAY_MAX)
-#	arrays[ArrayMesh.ARRAY_VERTEX] = PoolVector3Array(positions)
-#	arrays[ArrayMesh.ARRAY_INDEX] = PoolIntArray(indices)
+#	arrays[ArrayMesh.ARRAY_VERTEX] = PackedVector3Array(positions)
+#	arrays[ArrayMesh.ARRAY_INDEX] = PackedInt32Array(indices)
 #
 #	var mesh = ArrayMesh.new()
 #	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINES, arrays)
