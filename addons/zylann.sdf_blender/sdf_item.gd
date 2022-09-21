@@ -32,11 +32,7 @@ var _container : SDFContainer
 
 
 func _init():
-	set_notify_transform(true) # requires valid gizmo
-	
-	
-func _ready():
-	_data.params[0].value = global_transform.affine_inverse()
+	set_notify_transform(true) 
 
 
 func _set_param(param_index: int, value):

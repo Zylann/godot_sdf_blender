@@ -13,3 +13,4 @@ extends "./sdf_item.gd"
 
 func _init():
 	_data = SDF.SceneObject.new(SDF.SHAPE_SPHERE)
+	set_notify_transform(true) 

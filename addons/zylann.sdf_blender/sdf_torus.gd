@@ -18,5 +18,6 @@ extends "./sdf_item.gd"
 
 func _init():
 	_data = SDF.SceneObject.new(SDF.SHAPE_TORUS)
+	set_notify_transform(true) 
 
 
