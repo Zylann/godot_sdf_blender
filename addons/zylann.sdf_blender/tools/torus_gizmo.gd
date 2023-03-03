@@ -1,7 +1,6 @@
 @tool
 extends EditorNode3DGizmoPlugin
 
-const SDFTorus = preload("../sdf_torus.gd")
 
 const INDEX_RADIUS = 0
 const INDEX_THICKNESS = 1

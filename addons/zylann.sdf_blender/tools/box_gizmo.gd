@@ -1,7 +1,6 @@
 @tool
 extends EditorNode3DGizmoPlugin
 
-const SDFBox = preload("../sdf_box.gd")
 
 var _undo_redo : EditorUndoRedoManager
 

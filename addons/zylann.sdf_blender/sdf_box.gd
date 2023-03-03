@@ -1,6 +1,6 @@
 @tool
-extends "./sdf_item.gd"
-
+@icon("res://addons/zylann.sdf_blender/tools/icons/icon_sdf_box.svg")
+class_name SDFBox extends SDFItem
 
 @export var size: Vector3 :
 	get:
@@ -18,7 +18,7 @@ extends "./sdf_item.gd"
 
 func _init():
 	_data = SDF.SceneObject.new(SDF.SHAPE_BOX)
-	set_notify_transform(true) 
+	set_notify_transform(true)
 
 
 

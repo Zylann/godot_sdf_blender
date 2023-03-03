@@ -1,7 +1,6 @@
 @tool
 extends EditorNode3DGizmoPlugin
 
-const SDFSphere = preload("../sdf_sphere.gd")
 const Util = preload("../util/util.gd")
 
 const POINT_COUNT = 32

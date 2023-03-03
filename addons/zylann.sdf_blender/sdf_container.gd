@@ -1,9 +1,8 @@
 @tool
-extends MeshInstance3D
+@icon("res://addons/zylann.sdf_blender/tools/icons/icon_sdf_container.svg")
+class_name SDFContainer extends MeshInstance3D
 
 const SDF = preload("./sdf.gd")
-var SDFItem = load("res://addons/zylann.sdf_blender/sdf_item.gd")
-
 const SHADER_PATH = "res://addons/zylann.sdf_blender/raymarch.gdshader"
 
 
@@ -28,7 +27,7 @@ func _ready():
 	pm.orientation = PlaneMesh.FACE_Z
 	pm.flip_faces = true
 	mesh = pm
-	
+
 	set_process(true)
 	_update_shader()
 
@@ -39,7 +38,7 @@ func set_object_param(so, param_index: int, value):
 		param.value = value
 		if param.uniform != "" and _shader_material != null:
 			_shader_material.set_shader_parameter(param.uniform, param.value)
-			
+
 
 func set_object_operation(so, op: int):
 	if so.operation != op:
@@ -61,11 +60,11 @@ func _process(delta):
 	if _need_objects_update:
 		_need_objects_update = false
 		_update_objects_from_children()
-		
+
 	elif _need_shader_update:
 		_need_shader_update = false
 		_update_shader()
-	
+
 	set_process(false)
 
 
@@ -86,9 +85,9 @@ func _update_shader():
 
 	shader.code = code
 	_shader_material.set_shader(shader)
-	
+
 	set_material_override(_shader_material)
-	
+
 	_update_material()
 
 
@@ -189,22 +188,22 @@ static func _godot_type_to_fcount(type: int) -> int:
 static func _get_shape_code(obj, pos_code: String) -> String:
 	match obj.shape:
 		SDF.SHAPE_SPHERE:
-			return str("get_sphere(", pos_code, ", vec3(0.0), ", 
+			return str("get_sphere(", pos_code, ", vec3(0.0), ",
 				_get_param_code(obj, SDF.PARAM_RADIUS), ")")
 
 		SDF.SHAPE_BOX:
-			return str("get_rounded_box(", pos_code, 
-				", ", _get_param_code(obj, SDF.PARAM_SIZE), 
+			return str("get_rounded_box(", pos_code,
+				", ", _get_param_code(obj, SDF.PARAM_SIZE),
 				", ", _get_param_code(obj, SDF.PARAM_ROUNDING), ")")
 
 		SDF.SHAPE_TORUS:
-			return str("get_torus(", pos_code, 
-				", vec2(", _get_param_code(obj, SDF.PARAM_RADIUS), 
+			return str("get_torus(", pos_code,
+				", vec2(", _get_param_code(obj, SDF.PARAM_RADIUS),
 				", ", _get_param_code(obj, SDF.PARAM_THICKNESS), "))")
 
 		SDF.SHAPE_CYLINDER:
-			return str("get_rounded_cylinder(", pos_code, 
-				", ", _get_param_code(obj, SDF.PARAM_RADIUS), 
+			return str("get_rounded_cylinder(", pos_code,
+				", ", _get_param_code(obj, SDF.PARAM_RADIUS),
 				", ", _get_param_code(obj, SDF.PARAM_ROUNDING),
 				", ", _get_param_code(obj, SDF.PARAM_HEIGHT), ")")
 		_:
@@ -219,7 +218,7 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 	var fcount := 0
 
 	for object_index in len(objects):
-		var obj = objects[object_index] 
+		var obj = objects[object_index]
 		#if not obj.active:
 		#	continue
 
@@ -237,23 +236,23 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 
 		var pos_code := str("(", _get_param_code(obj, SDF.PARAM_TRANSFORM), " * vec4(p, 1.0)).xyz")
 		var indent = "\t"
-		
+
 		var shape_code := _get_shape_code(obj, pos_code)
-		
+
 		match obj.operation:
 			SDF.OP_UNION:
 				scene += str(indent, "s = smooth_union_c(s.w, ", shape_code, ", s.rgb, ",
-					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ", 
+					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ",
 					_get_param_code(obj, SDF.PARAM_SMOOTHNESS), ");\n")
 
 			SDF.OP_SUBTRACT:
 				scene += str(indent, "s = smooth_subtract_c(s.w, ", shape_code, ", s.rgb, ",
-					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ", 
+					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ",
 					_get_param_code(obj, SDF.PARAM_SMOOTHNESS), ");\n")
 
 			SDF.OP_COLOR:
 				scene += str(indent, "s.rgb = smooth_color(s.w, ", shape_code, ", s.rgb, ",
-					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ", 
+					_get_param_code(obj, SDF.PARAM_COLOR), ".rgb, ",
 					_get_param_code(obj, SDF.PARAM_SMOOTHNESS), ");\n")
 			_:
 				assert(false)
@@ -262,10 +261,10 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 	print("Fcount: ", fcount)
 
 	return str(
-		template.before_uniforms, 
-		uniforms, 
-		template.after_uniforms_before_scene, 
-		scene, 
+		template.before_uniforms,
+		uniforms,
+		template.after_uniforms_before_scene,
+		scene,
 		template.after_scene)
 
 

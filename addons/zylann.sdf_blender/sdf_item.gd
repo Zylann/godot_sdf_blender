@@ -1,5 +1,5 @@
 @tool
-extends Node3D
+class_name SDFItem extends Node3D
 
 const SDF = preload("./sdf.gd")
 const SDFContainer = preload("./sdf_container.gd")
@@ -32,7 +32,7 @@ var _container : SDFContainer
 
 
 func _init():
-	set_notify_transform(true) 
+	set_notify_transform(true)
 
 
 func _set_param(param_index: int, value):
@@ -41,7 +41,7 @@ func _set_param(param_index: int, value):
 		_container.set_object_param(_data, param_index, value)
 	else:
 		param.value = value
-	
+
 	if Engine.is_editor_hint() and is_inside_tree():
 		# Not all params need to update gizmos, but it's ok for now.
 		update_gizmos()
@@ -75,13 +75,13 @@ func _notification(what: int):
 	match what:
 		NOTIFICATION_PARENTED:
 			_set_container(_get_container())
-		
+
 		NOTIFICATION_UNPARENTED:
 			_set_container(_get_container())
-		
+
 		NOTIFICATION_TRANSFORM_CHANGED:
 			_set_param(SDF.PARAM_TRANSFORM, global_transform.affine_inverse())
-		
+
 		# TODO Visibility?
 
 

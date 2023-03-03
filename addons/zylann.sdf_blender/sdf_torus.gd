@@ -1,6 +1,6 @@
 @tool
-extends "./sdf_item.gd"
-
+@icon("res://addons/zylann.sdf_blender/tools/icons/icon_sdf_torus.svg")
+class_name SDFTorus extends SDFItem
 
 @export var radius: float :
 	get:
@@ -18,6 +18,6 @@ extends "./sdf_item.gd"
 
 func _init():
 	_data = SDF.SceneObject.new(SDF.SHAPE_TORUS)
-	set_notify_transform(true) 
+	set_notify_transform(true)
 
 

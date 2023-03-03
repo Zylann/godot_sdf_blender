@@ -1,7 +1,6 @@
 @tool
 extends EditorNode3DGizmoPlugin
 
-const SDFCylinder = preload("../sdf_cylinder.gd")
 
 const INDEX_RADIUS = 0
 const INDEX_HEIGHT = 1
