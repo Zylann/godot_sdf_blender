@@ -88,7 +88,7 @@ vec3 repeat_domain(vec3 p, vec3 c, vec3 l) {
 
 vec4 get_scene(vec3 p, float time) {
 	vec4 s = vec4(1.0, 1.0, 1.0, 99999.0);
-	
+
 	//<scene>
 	s.w = sharp_union(s.w, get_sphere(p, vec3(0.0), 1.0));
 	s.w = subtract(s.w, get_sphere(p, vec3(1.0, 0.0, 0.0), 0.8));
@@ -97,7 +97,7 @@ vec4 get_scene(vec3 p, float time) {
 	s.w = subtract(s.w, get_sphere(p, vec3(0.6, 0.2, 0.5), 0.4));
 	s = smooth_subtract_c(s.w, get_sphere(p, vec3(0.3, 0.0, 1.5), 0.5), s.rgb, vec3(0.0, 1.0, 0.0), 0.1);
 	//</scene>
-	
+
 	return s;
 }
 
@@ -139,24 +139,26 @@ void fragment() {
 	view_coords.xyz /= view_coords.w;
 	vec3 world_cam_pos = (INV_VIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	vec4 world_coords = INV_VIEW_MATRIX * vec4(view_coords.xyz, 1.0);
-	
+
 	vec3 ray_origin = world_coords.xyz;
 	vec3 ray_dir = normalize(world_coords.xyz - world_cam_pos);
-	
+
 	float time = 0.0;
-	
+
 	vec3 normal;
 	vec4 rm = raymarch(ray_origin, ray_dir, normal, time);
 	float d = rm.w;
-	
+
 	if (d > MAX_DISTANCE) {
 		discard;
 	}
-	
-	vec4 sdf_ndc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(ray_origin + ray_dir * d, 1.0);
-	DEPTH = (sdf_ndc.z / sdf_ndc.w) * 0.5 + 0.5;
+
+	vec3 intersectionPoint = ray_origin + ray_dir * d;
+	float zc = ( PROJECTION_MATRIX * VIEW_MATRIX * vec4( intersectionPoint, 1.0 ) ).z;
+	float wc = ( PROJECTION_MATRIX * VIEW_MATRIX * vec4( intersectionPoint, 1.0 ) ).w;
+	DEPTH = zc/wc;
 	NORMAL = (VIEW_MATRIX * vec4(normal, 0.0)).xyz;
-	
+
 	//ALBEDO = ray_dir * 0.1;
 	ALBEDO = rm.rgb;
 	//ALBEDO = normal;
