@@ -1,5 +1,5 @@
-tool
-extends EditorSpatialGizmoPlugin
+@tool
+extends EditorNode3DGizmoPlugin
 
 const SDFCylinder = preload("../sdf_cylinder.gd")
 
@@ -8,7 +8,7 @@ const INDEX_HEIGHT = 1
 
 const POINT_COUNT = 32
 
-var _undo_redo : UndoRedo
+var _undo_redo : EditorUndoRedoManager
 
 
 func _init():
@@ -18,7 +18,7 @@ func _init():
 	create_material("lines", Color(1, 1, 1), false, true, false)
 
 
-func set_undo_redo(ur: UndoRedo):
+func set_undo_redo(ur: EditorUndoRedoManager):
 	_undo_redo = ur
 
 
@@ -26,11 +26,11 @@ func get_name() -> String:
 	return "SDFCylinderGizmo"
 
 
-func has_gizmo(spatial: Spatial) -> bool:
+func _has_gizmo(spatial: Node3D) -> bool:
 	return spatial is SDFCylinder
 
 
-func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
+func _get_handle_value(gizmo: EditorNode3DGizmo, index: int, secondary:= false):
 	var node : SDFCylinder = gizmo.get_spatial_node()
 	match index:
 		INDEX_RADIUS:
@@ -39,7 +39,7 @@ func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
 			return node.height
 
 
-func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_point: Vector2):
+func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: Camera3D, screen_point: Vector2):
 	var node : SDFCylinder = gizmo.get_spatial_node()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
@@ -56,19 +56,19 @@ func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_po
 
 
 static func _get_axis_distance(
-	gtrans: Transform, ray_origin: Vector3, ray_dir: Vector3, axis: int) -> float:
+	gtrans: Transform3D, ray_origin: Vector3, ray_dir: Vector3, axis: int) -> float:
 	
 	var seg0 := gtrans.origin - 4096.0 * gtrans.basis[axis]
 	var seg1 := gtrans.origin + 4096.0 * gtrans.basis[axis]
 
-	var hits := Geometry.get_closest_points_between_segments(
+	var hits := Geometry3D.get_closest_points_between_segments(
 		seg0, seg1, ray_origin, ray_origin + ray_dir * 4096.0)
 
 	var hit = gtrans.affine_inverse() * hits[0]
 	return hit[axis]
 
 
-func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := false):
+func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, cancel := false):
 	var node : SDFCylinder = gizmo.get_spatial_node()
 	var ur := _undo_redo
 	
@@ -86,7 +86,7 @@ func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := fal
 			ur.commit_action()
 
 
-func redraw(gizmo: EditorSpatialGizmo):
+func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
 	
 	var node : SDFCylinder = gizmo.get_spatial_node()
@@ -109,7 +109,8 @@ func redraw(gizmo: EditorSpatialGizmo):
 	var lines_angle_step := TAU / 4.0
 	var lines_angle_start := PI / 4.0
 	for i in 4:
-		var p := polar2cartesian(radius, lines_angle_start + float(i) * lines_angle_step)
+		var theta := lines_angle_start + float(i) * lines_angle_step
+		var p := Vector2(radius * cos(theta), radius * sin(theta))
 		points.append(Vector3(p.x, -height, p.y))
 		points.append(Vector3(p.x, height, p.y))
 
@@ -118,7 +119,8 @@ func redraw(gizmo: EditorSpatialGizmo):
 		Vector3(0, height, 0)
 	]
 	
-	gizmo.add_lines(PoolVector3Array(points), get_material("lines", gizmo), false)
-	gizmo.add_handles(PoolVector3Array(handles), get_material("handles_billboard", gizmo), false)
+	gizmo.add_lines(PackedVector3Array(points), get_material("lines", gizmo), false)
+	var ids:=PackedInt32Array()
+	gizmo.add_handles(PackedVector3Array(handles), get_material("handles_billboard", gizmo), ids, false, false)
 
 
