@@ -21,7 +21,7 @@ func set_undo_redo(ur: EditorUndoRedoManager):
 	_undo_redo = ur
 
 
-func get_name() -> String:
+func _get_gizmo_name() -> String:
 	return "SDFTorusGizmo"
 
 
@@ -30,7 +30,7 @@ func _has_gizmo(spatial: Node3D) -> bool:
 
 
 func _get_handle_value(gizmo: EditorNode3DGizmo, index:int, secondary:=false):
-	var node : SDFTorus = gizmo.get_spatial_node()
+	var node : SDFTorus = gizmo.get_node_3d()
 	match index:
 		INDEX_RADIUS:
 			return node.radius
@@ -39,7 +39,7 @@ func _get_handle_value(gizmo: EditorNode3DGizmo, index:int, secondary:=false):
 
 
 func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: Camera3D, screen_point: Vector2):
-	var node : SDFTorus = gizmo.get_spatial_node()
+	var node : SDFTorus = gizmo.get_node_3d()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
 	var ray_dir := camera.project_ray_normal(screen_point)
@@ -56,7 +56,7 @@ func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: 
 
 static func _get_axis_distance(
 	gtrans: Transform3D, ray_origin: Vector3, ray_dir: Vector3, axis: int) -> float:
-	
+
 	var seg0 := gtrans.origin - 4096.0 * gtrans.basis[axis]
 	var seg1 := gtrans.origin + 4096.0 * gtrans.basis[axis]
 
@@ -68,9 +68,9 @@ static func _get_axis_distance(
 
 
 func _commit_handle(gizmo: EditorNode3DGizmo, index: int,secondary, restore, cancel := false):
-	var node : SDFTorus = gizmo.get_spatial_node()
+	var node : SDFTorus = gizmo.get_node_3d()
 	var ur := _undo_redo
-	
+
 	match index:
 		INDEX_RADIUS:
 			ur.create_action("Set SDFTorus radius")
@@ -87,26 +87,26 @@ func _commit_handle(gizmo: EditorNode3DGizmo, index: int,secondary, restore, can
 
 func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
-	
-	var node : SDFTorus = gizmo.get_spatial_node()
+
+	var node : SDFTorus = gizmo.get_node_3d()
 	var radius := node.radius
 	var thickness := node.thickness
 
 	var points := []
 	var angle_step := TAU / float(POINT_COUNT)
 	var radii := [radius - thickness, radius + thickness]
-	
+
 	for i in POINT_COUNT:
 		var angle := float(i) * angle_step
 		for r in radii:
 			points.append(r * Vector3(cos(angle), 0, sin(angle)))
 			points.append(r * Vector3(cos(angle + angle_step), 0, sin(angle + angle_step)))
-	
+
 	var handles := [
 		Vector3(radius, 0, 0),
 		Vector3(radius + thickness, 0, 0)
 	]
-	
+
 	var ids:=PackedInt32Array()
 	gizmo.add_lines(PackedVector3Array(points), get_material("lines", gizmo), false)
 	gizmo.add_handles(PackedVector3Array(handles), get_material("handles_billboard", gizmo), ids, false, false)

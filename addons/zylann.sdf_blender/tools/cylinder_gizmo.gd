@@ -21,7 +21,7 @@ func set_undo_redo(ur: EditorUndoRedoManager):
 	_undo_redo = ur
 
 
-func get_name() -> String:
+func _get_gizmo_name() -> String:
 	return "SDFCylinderGizmo"
 
 
@@ -30,7 +30,7 @@ func _has_gizmo(spatial: Node3D) -> bool:
 
 
 func _get_handle_value(gizmo: EditorNode3DGizmo, index: int, secondary:= false):
-	var node : SDFCylinder = gizmo.get_spatial_node()
+	var node : SDFCylinder = gizmo.get_node_3d()
 	match index:
 		INDEX_RADIUS:
 			return node.radius
@@ -39,24 +39,24 @@ func _get_handle_value(gizmo: EditorNode3DGizmo, index: int, secondary:= false):
 
 
 func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: Camera3D, screen_point: Vector2):
-	var node : SDFCylinder = gizmo.get_spatial_node()
+	var node : SDFCylinder = gizmo.get_node_3d()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
 	var ray_dir := camera.project_ray_normal(screen_point)
 
 	var gtrans := node.global_transform
-	
+
 	match index:
 		INDEX_RADIUS:
 			node.radius = _get_axis_distance(gtrans, ray_pos, ray_dir, Vector3.AXIS_X)
-		
+
 		INDEX_HEIGHT:
 			node.height = _get_axis_distance(gtrans, ray_pos, ray_dir, Vector3.AXIS_Y)
 
 
 static func _get_axis_distance(
 	gtrans: Transform3D, ray_origin: Vector3, ray_dir: Vector3, axis: int) -> float:
-	
+
 	var seg0 := gtrans.origin - 4096.0 * gtrans.basis[axis]
 	var seg1 := gtrans.origin + 4096.0 * gtrans.basis[axis]
 
@@ -68,9 +68,9 @@ static func _get_axis_distance(
 
 
 func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, cancel := false):
-	var node : SDFCylinder = gizmo.get_spatial_node()
+	var node : SDFCylinder = gizmo.get_node_3d()
 	var ur := _undo_redo
-	
+
 	match index:
 		INDEX_RADIUS:
 			ur.create_action("Set SDFCylinder radius")
@@ -87,23 +87,23 @@ func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, ca
 
 func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
-	
-	var node : SDFCylinder = gizmo.get_spatial_node()
+
+	var node : SDFCylinder = gizmo.get_node_3d()
 	var height := node.height
 	var radius := node.radius
-	
+
 	var points := []
 	var angle_step := TAU / float(POINT_COUNT)
 	var heights = [-height, height]
 	var radius_xz = Vector3(radius, 1, radius)
-	
+
 	# Top and bottom caps
 	for i in POINT_COUNT:
 		var angle := float(i) * angle_step
 		for h in heights:
 			points.append(radius_xz * Vector3(cos(angle), h, sin(angle)))
 			points.append(radius_xz * Vector3(cos(angle + angle_step), h, sin(angle + angle_step)))
-	
+
 	# Lines to connect caps
 	var lines_angle_step := TAU / 4.0
 	var lines_angle_start := PI / 4.0
@@ -117,7 +117,7 @@ func _redraw(gizmo: EditorNode3DGizmo):
 		Vector3(radius, 0, 0),
 		Vector3(0, height, 0)
 	]
-	
+
 	gizmo.add_lines(PackedVector3Array(points), get_material("lines", gizmo), false)
 	var ids:=PackedInt32Array()
 	gizmo.add_handles(PackedVector3Array(handles), get_material("handles_billboard", gizmo), ids, false, false)

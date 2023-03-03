@@ -38,14 +38,14 @@ func _init():
 	# TODO This is supposed to create an "on-top" material, but it still renders behind...
 	# See https://github.com/godotengine/godot/issues/44077
 	create_material("lines", Color(1, 1, 1), false, true, false)
-	
+
 
 
 func set_undo_redo(ur: EditorUndoRedoManager):
 	_undo_redo = ur
 
 
-func get_name() -> String:
+func _get_gizmo_name() -> String:
 	return "SDFBoxGizmo"
 
 
@@ -54,12 +54,12 @@ func _has_gizmo(spatial: Node3D) -> bool:
 
 
 func _get_handle_value(gizmo: EditorNode3DGizmo, index: int, secondary := false):
-	var node : SDFBox = gizmo.get_spatial_node()
+	var node : SDFBox = gizmo.get_node_3d()
 	return node.size[index]
 
 
 func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary : bool, camera: Camera3D, screen_point: Vector2):
-	var node : SDFBox = gizmo.get_spatial_node()
+	var node : SDFBox = gizmo.get_node_3d()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
 	var ray_dir := camera.project_ray_normal(screen_point)
@@ -81,19 +81,19 @@ func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary : bool, camera:
 
 
 func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, cancel := false):
-	var node : SDFBox = gizmo.get_spatial_node()
+	var node : SDFBox = gizmo.get_node_3d()
 	var ur := _undo_redo
-	
+
 	ur.create_action("Set SDFBox size")
 	ur.add_do_property(node, "radius", node.size)
 	ur.add_undo_property(node, "radius", restore)
 	ur.commit_action()
-	
+
 
 func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
-	
-	var node : SDFBox = gizmo.get_spatial_node()
+
+	var node : SDFBox = gizmo.get_node_3d()
 	var size := node.size
 
 	var points := []
@@ -105,7 +105,7 @@ func _redraw(gizmo: EditorNode3DGizmo):
 		var h = Vector3()
 		h[axis] = size[axis]
 		handles.append(h)
-	
+
 	gizmo.add_lines(PackedVector3Array(points), get_material("lines", gizmo), false)
 	var ids:=PackedInt32Array()
 	gizmo.add_handles(PackedVector3Array(handles), get_material("handles_billboard", gizmo), ids, false, false)

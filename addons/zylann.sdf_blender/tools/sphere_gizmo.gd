@@ -19,7 +19,7 @@ func set_undo_redo(ur: EditorUndoRedoManager):
 	_undo_redo = ur
 
 
-func get_name() -> String:
+func _get_gizmo_name() -> String:
 	return "SDFSphereGizmo"
 
 
@@ -28,12 +28,12 @@ func _has_gizmo(spatial: Node3D) -> bool:
 
 
 func _get_handle_value(gizmo: EditorNode3DGizmo, index: int, secondary := false):
-	var node : SDFSphere = gizmo.get_spatial_node()
+	var node : SDFSphere = gizmo.get_node_3d()
 	return node.radius
 
 
 func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: Camera3D, screen_point: Vector2):
-	var node : SDFSphere = gizmo.get_spatial_node()
+	var node : SDFSphere = gizmo.get_node_3d()
 	var center := node.global_transform.origin
 	var pos := camera.project_ray_origin(screen_point)
 	var dir := camera.project_ray_normal(screen_point)
@@ -46,12 +46,12 @@ func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: 
 
 
 func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, cancel := false):
-	var node : SDFSphere = gizmo.get_spatial_node()
+	var node : SDFSphere = gizmo.get_node_3d()
 	var ur := _undo_redo
-	
+
 	# Spheres have only one handle
 	assert(index == 0)
-	
+
 	ur.create_action("Set SDFSphere radius")
 	ur.add_do_property(node, "radius", node.radius)
 	ur.add_undo_property(node, "radius", restore)
@@ -60,13 +60,13 @@ func _commit_handle(gizmo: EditorNode3DGizmo, index: int, secondary, restore, ca
 
 func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
-	
-	var node : SDFSphere = gizmo.get_spatial_node()
+
+	var node : SDFSphere = gizmo.get_node_3d()
 	var radius := node.radius
 
 	var points := []
 	var angle_step := TAU / float(POINT_COUNT)
-	
+
 	for i in POINT_COUNT:
 		var angle := float(i) * angle_step
 		points.append(radius * Vector3(cos(angle), sin(angle), 0.0))
@@ -74,7 +74,7 @@ func _redraw(gizmo: EditorNode3DGizmo):
 
 	# Why do we have to send "true" for the billboard parameter, when the material already has it?
 	gizmo.add_lines(PackedVector3Array(points), get_material("lines_billboard", gizmo), true)
-	
+
 	var handles := PackedVector3Array([Vector3(radius, 0, 0)])
 	var ids:=PackedInt32Array()
 	gizmo.add_handles(handles, get_material("handles_billboard", gizmo), ids, true, false )
