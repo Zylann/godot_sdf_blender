@@ -114,10 +114,9 @@ func _update_aabb():
 
 
 static func _load_shader_template(fpath: String) -> ShaderTemplate:
-	var f := File.new()
-	var err := f.open(fpath, File.READ)
-	if err != OK:
-		push_error("Could not load {0}: error {1}".format([fpath, err]))
+	var f = FileAccess.open(fpath, FileAccess.READ)
+	if f == null:
+		push_error("Could not load {0}: error {1}".format([fpath, FileAccess.get_open_error()]))
 		return null
 	var template := ShaderTemplate.new()
 	var tags := [
@@ -269,10 +268,9 @@ static func _generate_shader_code(objects : Array, template: ShaderTemplate) -> 
 
 
 static func _debug_dump_text_file(fpath: String, text: String):
-	var f = File.new()
-	var err = f.open(fpath, File.WRITE)
-	if err != OK:
-		push_error("Could not save file {0}: error {1}".format([fpath, err]))
+	var f = FileAccess.open(fpath, FileAccess.WRITE)
+	if f == null:
+		push_error("Could not save file {0}: error {1}".format([fpath, FileAccess.get_open_error()]))
 		return
 	f.store_string(text)
 	f.close()
