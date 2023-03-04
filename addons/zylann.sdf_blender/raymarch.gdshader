@@ -155,10 +155,12 @@ void fragment() {
 		discard;
 	}
 
-	vec3 intersectionPoint = ray_origin + ray_dir * d;
-	float zc = ( PROJECTION_MATRIX * VIEW_MATRIX * vec4( intersectionPoint, 1.0 ) ).z;
-	float wc = ( PROJECTION_MATRIX * VIEW_MATRIX * vec4( intersectionPoint, 1.0 ) ).w;
-	DEPTH = zc/wc;
+	vec4 sdf_ndc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(ray_origin + ray_dir * d, 1.0);
+	if (OUTPUT_IS_SRGB) { // opengl
+		DEPTH = (sdf_ndc.z / sdf_ndc.w) * 0.5 + 0.5;
+	} else { // vulkan
+		DEPTH = (sdf_ndc.z / sdf_ndc.w);
+	}
 	NORMAL = (VIEW_MATRIX * vec4(normal, 0.0)).xyz;
 
 	//ALBEDO = ray_dir * 0.1;
