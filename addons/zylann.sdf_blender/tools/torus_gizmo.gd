@@ -1,14 +1,13 @@
-tool
-extends EditorSpatialGizmoPlugin
+@tool
+extends EditorNode3DGizmoPlugin
 
-const SDFTorus = preload("../sdf_torus.gd")
 
 const INDEX_RADIUS = 0
 const INDEX_THICKNESS = 1
 
 const POINT_COUNT = 32
 
-var _undo_redo : UndoRedo
+var _undo_redo : EditorUndoRedoManager
 
 
 func _init():
@@ -18,20 +17,20 @@ func _init():
 	create_material("lines", Color(1, 1, 1), false, true, false)
 
 
-func set_undo_redo(ur: UndoRedo):
+func set_undo_redo(ur: EditorUndoRedoManager):
 	_undo_redo = ur
 
 
-func get_name() -> String:
+func _get_gizmo_name() -> String:
 	return "SDFTorusGizmo"
 
 
-func has_gizmo(spatial: Spatial) -> bool:
+func _has_gizmo(spatial: Node3D) -> bool:
 	return spatial is SDFTorus
 
 
-func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
-	var node : SDFTorus = gizmo.get_spatial_node()
+func _get_handle_value(gizmo: EditorNode3DGizmo, index:int, secondary:=false):
+	var node : SDFTorus = gizmo.get_node_3d()
 	match index:
 		INDEX_RADIUS:
 			return node.radius
@@ -39,8 +38,8 @@ func get_handle_value(gizmo: EditorSpatialGizmo, index: int):
 			return node.thickness
 
 
-func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_point: Vector2):
-	var node : SDFTorus = gizmo.get_spatial_node()
+func _set_handle(gizmo: EditorNode3DGizmo, index: int, secondary: bool, camera: Camera3D, screen_point: Vector2):
+	var node : SDFTorus = gizmo.get_node_3d()
 
 	var ray_pos := camera.project_ray_origin(screen_point)
 	var ray_dir := camera.project_ray_normal(screen_point)
@@ -56,22 +55,22 @@ func set_handle(gizmo: EditorSpatialGizmo, index: int, camera: Camera, screen_po
 
 
 static func _get_axis_distance(
-	gtrans: Transform, ray_origin: Vector3, ray_dir: Vector3, axis: int) -> float:
-	
+	gtrans: Transform3D, ray_origin: Vector3, ray_dir: Vector3, axis: int) -> float:
+
 	var seg0 := gtrans.origin - 4096.0 * gtrans.basis[axis]
 	var seg1 := gtrans.origin + 4096.0 * gtrans.basis[axis]
 
-	var hits := Geometry.get_closest_points_between_segments(
+	var hits := Geometry3D.get_closest_points_between_segments(
 		seg0, seg1, ray_origin, ray_origin + ray_dir * 4096.0)
 
 	var hit = gtrans.affine_inverse() * hits[0]
 	return hit[axis]
 
 
-func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := false):
-	var node : SDFTorus = gizmo.get_spatial_node()
+func _commit_handle(gizmo: EditorNode3DGizmo, index: int,secondary, restore, cancel := false):
+	var node : SDFTorus = gizmo.get_node_3d()
 	var ur := _undo_redo
-	
+
 	match index:
 		INDEX_RADIUS:
 			ur.create_action("Set SDFTorus radius")
@@ -86,29 +85,30 @@ func commit_handle(gizmo: EditorSpatialGizmo, index: int, restore, cancel := fal
 			ur.commit_action()
 
 
-func redraw(gizmo: EditorSpatialGizmo):
+func _redraw(gizmo: EditorNode3DGizmo):
 	gizmo.clear()
-	
-	var node : SDFTorus = gizmo.get_spatial_node()
+
+	var node : SDFTorus = gizmo.get_node_3d()
 	var radius := node.radius
 	var thickness := node.thickness
 
 	var points := []
 	var angle_step := TAU / float(POINT_COUNT)
 	var radii := [radius - thickness, radius + thickness]
-	
+
 	for i in POINT_COUNT:
 		var angle := float(i) * angle_step
 		for r in radii:
 			points.append(r * Vector3(cos(angle), 0, sin(angle)))
 			points.append(r * Vector3(cos(angle + angle_step), 0, sin(angle + angle_step)))
-	
+
 	var handles := [
 		Vector3(radius, 0, 0),
 		Vector3(radius + thickness, 0, 0)
 	]
-	
-	gizmo.add_lines(PoolVector3Array(points), get_material("lines", gizmo), false)
-	gizmo.add_handles(PoolVector3Array(handles), get_material("handles_billboard", gizmo), false)
+
+	var ids:=PackedInt32Array()
+	gizmo.add_lines(PackedVector3Array(points), get_material("lines", gizmo), false)
+	gizmo.add_handles(PackedVector3Array(handles), get_material("handles_billboard", gizmo), ids, false, false)
 
 

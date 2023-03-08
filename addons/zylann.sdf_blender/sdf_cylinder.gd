@@ -1,39 +1,27 @@
-tool
-extends "./sdf_item.gd"
+@tool
+@icon("res://addons/zylann.sdf_blender/tools/icons/icon_sdf_cylinder.svg")
+class_name SDFCylinder extends SDFItem
 
-
-export(float) var radius : float setget set_radius, get_radius
-export(float) var height : float setget set_height, get_height
-export(float) var rounding : float setget set_rounding, get_rounding
+@export var radius: float :
+	get:
+		return _data.params[SDF.PARAM_RADIUS].value
+	set(r):
+		radius = r # Useless but doing it anyways
+		_set_param(SDF.PARAM_RADIUS, r)
+@export var height:  float :
+	get:
+		return _data.params[SDF.PARAM_HEIGHT].value
+	set(h):
+		height = h # Useless but doing it anyways
+		_set_param(SDF.PARAM_HEIGHT, h)
+@export var rounding: float :
+	get:
+		return _get_param(SDF.PARAM_ROUNDING)
+	set(r):
+		rounding = r # Useless but doing it anyways
+		_set_param(SDF.PARAM_ROUNDING, r)
 
 
 func _init():
 	_data = SDF.SceneObject.new(SDF.SHAPE_CYLINDER)
-
-
-func get_radius() -> float:
-	return _data.params[SDF.PARAM_RADIUS].value
-
-
-func set_radius(r: float):
-	radius = r # Useless but doing it anyways
-	_set_param(SDF.PARAM_RADIUS, r)
-
-
-func get_height() -> float:
-	return _data.params[SDF.PARAM_HEIGHT].value
-
-
-func set_height(h: float):
-	height = h # Useless but doing it anyways
-	_set_param(SDF.PARAM_HEIGHT, h)
-
-
-func get_rounding() -> float:
-	return _get_param(SDF.PARAM_ROUNDING)
-
-
-func set_rounding(r: float):
-	rounding = r # Useless but doing it anyways
-	_set_param(SDF.PARAM_ROUNDING, r)
-
+	set_notify_transform(true)
