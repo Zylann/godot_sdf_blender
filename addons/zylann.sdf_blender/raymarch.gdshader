@@ -1,6 +1,4 @@
 shader_type spatial;
-//shadows don't work right at all atm, worse than nothing.
-render_mode shadows_disabled;
 //render_mode unshaded;//, depth_draw_opaque;
 
 //<uniforms>
